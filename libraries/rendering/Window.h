@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-class GLFWwindow;
+struct GLFWwindow;
 class Window
 {
 public:
@@ -15,7 +15,6 @@ public:
     Window(int width, int height, std::string title);
 
 private:
-    //    GLFWWindow* windowHandle;
 
     GLFWwindow* m_glfwWindow { nullptr };
     std::string m_windowTitle { "" };

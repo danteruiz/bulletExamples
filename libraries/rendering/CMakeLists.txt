@@ -5,13 +5,11 @@ file(GLOB graphics_source "*.cpp")
 
 add_library(render STATIC ${graphics_source} ${graphics_headers})
 find_package(OPENGL REQUIRED)
-find_package(GLFW3 REQUIRED)
-find_package(GLM REQUIRED)
 
 target_link_libraries(render
-  PUBLIC ${GLM_LIBRARY}
-  PRIVATE ${GLFW3_LIBRARY} ${OPENGL_LIBRARY})
+  PUBLIC ${CONAN_LIBS_GLM}
+  PRIVATE ${CONAN_LIBS_GLFW} ${OPENGL_LIBRARY})
 
 target_include_directories (render
-  PUBLIC ${GLM_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE ${GLFW3_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+  PUBLIC ${CONAN_INCLUDE_DIRS_GLM} ${CMAKE_CURRENT_SOURCE_DIR}
+  PRIVATE ${CONAN_INCLUDE_DIRS_GLFW} ${OPENGL_INCLUDE_DIR})
