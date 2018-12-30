@@ -3,9 +3,10 @@
 #include <Engine.h>
 #include <Window.h>
 
-int main() {
+int main()
+{
 
-    Window window(500, 500, "This is just a test");
+    Window window(500, 500, "Vechicl Simulation");
 
     if (!window.createWindow())
     {
