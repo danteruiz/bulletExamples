@@ -3,7 +3,7 @@
 #include <Engine.h>
 #include <Window.h>
 
-int main()
+int main(int argc, char* argv[])
 {
 
     Window window(500, 500, "Vechicl Simulation");

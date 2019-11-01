@@ -1,5 +1,6 @@
 #include "Window.h"
 #include <Glfw.h>
+#include <GLFW/glfw3.h>
 
 Window::Window(int width, int height, std::string title)
 {
