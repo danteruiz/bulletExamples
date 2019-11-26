@@ -1,7 +1,7 @@
 #include <iostream>
-#include <string_view>
 #include <Engine.h>
 #include <Window.h>
+#include <Input.h>
 
 int main(int argc, char* argv[])
 {
@@ -14,8 +14,11 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    Input input;
+
     while (!window.shouldClose())
     {
+        input.pollInput();
         window.simpleUpdate();
     }
     return 0;

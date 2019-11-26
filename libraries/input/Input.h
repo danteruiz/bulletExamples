@@ -3,6 +3,11 @@
 class Input
 {
 public:
-    Input() = default;
+    Input();
     ~Input() = default;
+
+
+    void pollInput();
+
+private:
 };
