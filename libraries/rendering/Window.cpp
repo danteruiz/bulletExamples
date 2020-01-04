@@ -26,6 +26,7 @@ void Window::simpleUpdate()
 bool Window::createWindow()
 {
     // TODO: should make this it own thing.
+    glfwInitHint(GLFW_JOYSTICK_HAT_BUTTONS, GLFW_FALSE);
     if (!glfwInit())
     {
         return false;

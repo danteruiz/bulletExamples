@@ -6,8 +6,6 @@ public:
     Input();
     ~Input() = default;
 
-
     void pollInput();
-
 private:
 };

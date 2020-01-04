@@ -1,4 +1,5 @@
 [requires]
 glm/0.9.8.5@g-truc/stable
-glfw/3.2.1@bincrafters/stable
+glfw/3.3@bincrafters/stable
 bullet/2.87@bincrafters/stable
+Assimp/4.1.0@jacmoe/stable 

@@ -10,7 +10,7 @@ conan_cmake_run(CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED_ON)
 if (UNIX)
-  add_compile_options(-W -Wall -Wextra -Wpedantic -Werror -std=c++1z)
+  add_compile_options(-W -Wall -Wextra -Wpedantic -Werror -std=c++2a)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")

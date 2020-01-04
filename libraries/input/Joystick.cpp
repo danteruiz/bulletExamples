@@ -1,0 +1,25 @@
+#include "Joystick.h"
+
+Joystick::Joystick(int joystickIndex)
+{
+    m_joystickIndex = joystickIndex;
+}
+
+int Joystick::getButton(int buttonChannel) const
+{
+    return m_gamepadState.buttons[buttonChannel];
+}
+
+float Joystick::getAxis(int axisChannel) const
+{
+    return m_gamepadState.axes[axisChannel];
+}
+
+void Joystick::update()
+{
+    if (!glfwJoystickPresent(m_joystickIndex))
+    {
+        return;
+    }
+    glfwGetGamepadState(m_joystickIndex, &m_gamepadState);
+}
