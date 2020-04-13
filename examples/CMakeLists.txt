@@ -6,5 +6,5 @@ else()
   add_executable(${PROJECT_NAME} main.cpp)
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE render physics input)
+target_link_libraries(${PROJECT_NAME} render physics input)
 

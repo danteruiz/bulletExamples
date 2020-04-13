@@ -12,10 +12,18 @@ public:
     bool shouldClose();
 
     void simpleUpdate();
+    void swap();
     Window(int width, int height, std::string title);
 
-private:
 
+    int getHeight() const { return m_height; }
+    int getWidth() const { return m_width; }
+
+    void setHeight(int height) { m_height = height; }
+    void setWidth(int width) { m_width = width; }
+
+    GLFWwindow* getWindowPtr() const { return m_glfwWindow; }
+private:
     GLFWwindow* m_glfwWindow { nullptr };
     std::string m_windowTitle { "" };
 

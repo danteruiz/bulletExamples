@@ -1,0 +1,16 @@
+function(LINK_PERSONAL_LIBRARIES)
+  file(RELATIVE_PATH RELATIVE_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR} "${LIBRARIES_DIR}")
+  set(LIBRARIES_TO_LINK ${ARGN})
+
+  foreach (LIBRARY ${LIBRARIES_TO_LINK})
+    if (NOT TARGET ${LIBRARY})
+      add_subdirectory("${RELATIVE_LIBRARY_PATH}/${LIBRARY}" "${RELATIVE_LIBRARY_PATH}/${LIBRARY}")
+    endif()
+  endforeach()
+
+  foreach (LIBRARY ${LIBRARIES_TO_LINK})
+    target_include_directories(${TARGET_NAME} PRIVATE "${LIBRARIES_DIR}/${LIBRARY}")
+    target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_BINARY_DIR}/libraries/${LIBRARY}")
+    target_link_libraries(${TARGET_NAME} PRIVATE ${LIBRARY})
+  endforeach()
+endfunction()

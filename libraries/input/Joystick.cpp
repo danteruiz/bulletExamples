@@ -1,9 +1,7 @@
 #include "Joystick.h"
 
-Joystick::Joystick(int joystickIndex)
-{
-    m_joystickIndex = joystickIndex;
-}
+Joystick::Joystick(int joystickIndex, InputDevice::Type type) noexcept : InputDevice(type), m_joystickIndex(joystickIndex)
+{ }
 
 int Joystick::getButton(int buttonChannel) const
 {

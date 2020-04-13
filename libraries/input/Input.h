@@ -1,5 +1,9 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+
+#include "InputDevice.h"
 class Input
 {
 public:
@@ -8,4 +12,5 @@ public:
 
     void pollInput();
 private:
+    std::vector<InputDevice::Pointer> m_inputDevices;
 };

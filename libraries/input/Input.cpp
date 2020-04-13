@@ -27,10 +27,11 @@ void joystickConnectioncallback(int jid, int event)
 
 Input::Input()
 {
-    const char* name = glfwGetJoystickName(GLFW_JOYSTICK_1);
-    std::cout << name << std::endl;
+    /*const char* name = glfwGetJoystickName(GLFW_JOYSTICK_1);
     glfwSetJoystickCallback(joystickConnectioncallback);
-    joystick = new Joystick(GLFW_JOYSTICK_1);
+    joystick = new Joystick(GLFW_JOYSTICK_1);*/
+
+    m_inputDevices.push_back(std::make_shared<Joystick>(GLFW_JOYSTICK_1, InputDevice::JOYSTICK));
 }
 
 bool isButtonPressed(const unsigned char button)
@@ -40,20 +41,26 @@ bool isButtonPressed(const unsigned char button)
 
 void Input::pollInput()
 {
-    joystick->update();
-    /*std::cout << joystick->getButton(input::A) << "\n";
-    std::cout << joystick->getButton(input::B) << "\n";
-    std::cout << joystick->getButton(input::Y) << "\n";
-    std::cout << joystick->getButton(input::X) << "\n";
-    std::cout << joystick->getButton(input::LB) << "\n";
-    std::cout << joystick->getButton(input::RB) << "\n";
-    std::cout << joystick->getButton(input::SELECT) << "\n";
-    std::cout << joystick->getButton(input::START) << "\n";
-    std::cout << joystick->getButton(input::HOME) << "\n";
-    std::cout << joystick->getButton(input::LS) << "\n";
-    std::cout << joystick->getButton(input::RS) << "\n";
-    std::cout << joystick->getButton(input::DPAD_UP) << "\n";
-    std::cout << joystick->getButton(input::DPAD_RIGHT) << "\n";
 
-    std::cout << "\n \n";*/
+    for (const auto& inputDevice: m_inputDevices) {
+        inputDevice->update();
+    }
+    /*if (joystick) {
+        joystick->update();
+        std::cout << joystick->getButton(input::A) << "\n";
+        std::cout << joystick->getButton(input::B) << "\n";
+        std::cout << joystick->getButton(input::Y) << "\n";
+        std::cout << joystick->getButton(input::X) << "\n";
+        std::cout << joystick->getButton(input::LB) << "\n";
+        std::cout << joystick->getButton(input::RB) << "\n";
+        std::cout << joystick->getButton(input::SELECT) << "\n";
+        std::cout << joystick->getButton(input::START) << "\n";
+        std::cout << joystick->getButton(input::HOME) << "\n";
+        std::cout << joystick->getButton(input::LS) << "\n";
+        std::cout << joystick->getButton(input::RS) << "\n";
+        std::cout << joystick->getButton(input::DPAD_UP) << "\n";
+        std::cout << joystick->getButton(input::DPAD_RIGHT) << "\n";
+
+        std::cout << "\n \n";
+        }*/
 }

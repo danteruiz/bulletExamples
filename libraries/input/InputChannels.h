@@ -1,6 +1,6 @@
 #pragma once
 
-namespace input
+namespace controller
 {
     enum JoystickAxisChannel
     {
@@ -31,3 +31,4 @@ namespace input
         DPAD_LEFT
     };
 };
+
