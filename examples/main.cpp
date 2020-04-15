@@ -4,6 +4,7 @@
 #include <string>
 #include <algorithm>
 #include <functional>
+#include <memory>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,7 +15,8 @@
 #include <Window.h>
 #include <GLFW/glfw3.h>
 #include <Input.h>
-
+#include <Mouse.h>
+#include "Demo.h"
 
 
 static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
@@ -111,7 +113,7 @@ static Camera camera;
 
 
 
-void updateCameraPosition(const glm::vec2& v)
+void updateCameraPosition(glm::vec2 const &v)
 {
 
     glm::quat orientation = camera.orientation;
@@ -122,7 +124,7 @@ void updateCameraPosition(const glm::vec2& v)
     camera.position += zOffset + xOffset;
 }
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
 
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
@@ -150,35 +152,23 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
-
-float lastXpos = 0;
-float lastYpos = 0;
-
-
 float yaw = 0;
 float pitch = 0;
-void mouseCallback(GLFWwindow* window, double xpos, double ypos)
+
+
+void updateCameraOrientation(std::shared_ptr<Mouse> const &mouse)
 {
-
-    int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-
-
-    if (state == GLFW_PRESS)
+    if (mouse->getButton(GLFW_MOUSE_BUTTON_RIGHT))
     {
-        float xOffset = (float) xpos - lastXpos;
-        float yOffset = (float) ypos - lastYpos;
-        lastYpos = (float) ypos;
-        lastXpos = (float) xpos;
+        static float const sensitivity = 0.05f;
+        float xOffset = mouse->getAxis(Mouse::MOUSE_AXIS_X_DELTA) * sensitivity;
+        float yOffset = mouse->getAxis(Mouse::MOUSE_AXIS_Y_DELTA) * sensitivity;
 
-
-        const float sensitivity = 0.05f;
-        xOffset *= sensitivity;
-        yOffset *= sensitivity;
 
         yaw += (-1.0f * xOffset);
         pitch += yOffset;
 
-        pitch = std::clamp(pitch, -89.0f, 89.0f);
+        pitch = std::clamp(pitch, -89.9f, 89.9f);
 
         glm::vec3 eulerAngle(pitch, yaw, 0.0f);
 
@@ -193,19 +183,12 @@ void onWindowSizeChanged(GLFWwindow* window, int width, int height)
 }
 
 
-enum  AxisChannel
-{
- DOWN = 0,
- UP,
- MAX_NUM
-};
-
-
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
 
-    std::array<int, AxisChannel::MAX_NUM> values;
-    //int channel = AxisChannel::DOWN;
+
+
+    DemoApplication demoApplication;
     glewExperimental = true;
     Window window(500, 500, "Demo");
 
@@ -224,13 +207,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
         return -1;
     }
 
+
+    std::shared_ptr<Mouse> mouse = std::make_shared<Mouse>(InputDevice::MOUSE);
+
     updateWindowSize = [&window] (int height, int width) {
         GLFWwindow* glfwWindow = window.getWindowPtr();
         window.setHeight(height);
         window.setWidth(width);
     };
-    lastYpos = (float) window.getHeight() / 2;
-    lastXpos = (float) window.getWidth() / 2;
 
     glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -239,7 +223,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 	glEnable(GL_LINE_SMOOTH);
 
     glfwSetKeyCallback(window.getWindowPtr(), keyCallback);
-    glfwSetCursorPosCallback(window.getWindowPtr(), mouseCallback);
     glfwSetWindowSizeCallback(window.getWindowPtr(), onWindowSizeChanged);
 
     GLuint VBO, VAO, EBO, vbo2;
@@ -296,6 +279,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
     {
 
         input.pollInput();
+
+        mouse->mouseUpdate(window.getWindowPtr());
+        updateCameraOrientation(mouse);
+
         glm::vec3 cameraFront = camera.orientation * UNIT_Z;
         glm::vec3 cameraUp = camera.orientation * UNIT_Y;
 
@@ -309,11 +296,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
         glBindBuffer(GL_ARRAY_BUFFER, vbo2);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-        glUseProgram(floorShader.getID());
 
-        glUniformMatrix4fv(glGetUniformLocation(floorShader.getID(), "model"), 1, GL_FALSE, glm::value_ptr(floorModel));
-        glUniformMatrix4fv(glGetUniformLocation(floorShader.getID(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glUniformMatrix4fv(glGetUniformLocation(floorShader.getID(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+
+        floorShader.bind();
+        floorShader.setUniformMat4("model", floorModel);
+        floorShader.setUniformMat4("projection", projection);
+        floorShader.setUniformMat4("view", view);
 
         size_t offset = indices.size();
         void* data = &indicesData[offset];
@@ -321,17 +309,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
         glDrawElements(GL_TRIANGLES, (GLsizei) floor_indices.size(), GL_UNSIGNED_INT, (void*) (offset * sizeof(int)));
 
-        int shaderID = shader.getID();
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-        glUseProgram(shaderID);
 
         model = glm::rotate(model, glm::radians(0.5f), glm::vec3(1.0f, 0.3f, 0.5f));
 
-        glUniformMatrix4fv(glGetUniformLocation(shaderID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(shaderID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glUniformMatrix4fv(glGetUniformLocation(shaderID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        shader.bind();
+        shader.setUniformMat4("model", model);
+        shader.setUniformMat4("projection", projection);
+        shader.setUniformMat4("view", view);
         glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, 0);
         window.swap();
     }

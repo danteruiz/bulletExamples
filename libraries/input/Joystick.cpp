@@ -1,7 +1,10 @@
 #include "Joystick.h"
 
 Joystick::Joystick(int joystickIndex, InputDevice::Type type) noexcept : InputDevice(type), m_joystickIndex(joystickIndex)
-{ }
+{
+
+    m_name = std::string(glfwGetJoystickName(joystickIndex));
+}
 
 int Joystick::getButton(int buttonChannel) const
 {

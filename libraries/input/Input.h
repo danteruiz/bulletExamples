@@ -2,8 +2,12 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include "InputDevice.h"
+
+
+class Mouse;
 class Input
 {
 public:
@@ -12,5 +16,5 @@ public:
 
     void pollInput();
 private:
-    std::vector<InputDevice::Pointer> m_inputDevices;
+    std::unordered_map<int, InputDevice::Pointer> m_inputDevices;
 };

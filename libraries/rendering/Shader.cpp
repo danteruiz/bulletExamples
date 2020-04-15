@@ -6,7 +6,7 @@
 #include <sstream>
 #include <iostream>
 
-Shader::Shader(const std::string& fragmentSource, const std::string& vertexSource)
+Shader::Shader(std::string const &fragmentSource, std::string const &vertexSource)
 {
     std::string vertexCode;
     std::string fragmentCode;
@@ -32,4 +32,16 @@ Shader::Shader(const std::string& fragmentSource, const std::string& vertexSourc
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+}
+
+
+void Shader::bind() const
+{
+    glUseProgram(m_id);
+}
+
+
+void Shader::setUniformMat4(std::string const &name, glm::mat4 const &matrix) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 }

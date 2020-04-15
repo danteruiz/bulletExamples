@@ -27,11 +27,14 @@ void joystickConnectioncallback(int jid, int event)
 
 Input::Input()
 {
-    /*const char* name = glfwGetJoystickName(GLFW_JOYSTICK_1);
     glfwSetJoystickCallback(joystickConnectioncallback);
-    joystick = new Joystick(GLFW_JOYSTICK_1);*/
 
-    m_inputDevices.push_back(std::make_shared<Joystick>(GLFW_JOYSTICK_1, InputDevice::JOYSTICK));
+
+    std::cout << "GLFW_PRESS: " << GLFW_PRESS << "\n";
+    std::cout << "GLFW_RELEASE: " << GLFW_RELEASE << "\n";
+
+    std::shared_ptr<Joystick> joystick = std::make_shared<Joystick>(GLFW_JOYSTICK_1, InputDevice::JOYSTICK);
+    m_inputDevices[joystick->getID()] = joystick;
 }
 
 bool isButtonPressed(const unsigned char button)
@@ -43,24 +46,6 @@ void Input::pollInput()
 {
 
     for (const auto& inputDevice: m_inputDevices) {
-        inputDevice->update();
+        inputDevice.second->update();
     }
-    /*if (joystick) {
-        joystick->update();
-        std::cout << joystick->getButton(input::A) << "\n";
-        std::cout << joystick->getButton(input::B) << "\n";
-        std::cout << joystick->getButton(input::Y) << "\n";
-        std::cout << joystick->getButton(input::X) << "\n";
-        std::cout << joystick->getButton(input::LB) << "\n";
-        std::cout << joystick->getButton(input::RB) << "\n";
-        std::cout << joystick->getButton(input::SELECT) << "\n";
-        std::cout << joystick->getButton(input::START) << "\n";
-        std::cout << joystick->getButton(input::HOME) << "\n";
-        std::cout << joystick->getButton(input::LS) << "\n";
-        std::cout << joystick->getButton(input::RS) << "\n";
-        std::cout << joystick->getButton(input::DPAD_UP) << "\n";
-        std::cout << joystick->getButton(input::DPAD_RIGHT) << "\n";
-
-        std::cout << "\n \n";
-        }*/
 }

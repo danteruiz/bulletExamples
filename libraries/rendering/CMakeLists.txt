@@ -5,7 +5,7 @@ file(GLOB graphics_source "*.cpp")
 
 add_library(render STATIC ${graphics_source} ${graphics_headers})
 
-link_personal_libraries( glfw )
+link_personal_libraries(glfw)
 find_package(OPENGL REQUIRED)
 
 target_link_libraries(render
