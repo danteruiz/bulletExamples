@@ -60,7 +60,6 @@ namespace shader {
         GLuint glprogram = glCreateProgram();
 
         for (auto shader: shaders) {
-            std::cout << shader << "\n";
             glAttachShader(glprogram, shader);
         }
 

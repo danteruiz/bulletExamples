@@ -1,4 +1,4 @@
-project(VehicleSimulation)
+project(rendering-examples)
 cmake_minimum_required(VERSION 3.11)
 
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)

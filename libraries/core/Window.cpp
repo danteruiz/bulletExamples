@@ -1,5 +1,7 @@
 #include "Window.h"
-#include <Glfw.h>
+
+
+#include "Glfw.h"
 #include <GLFW/glfw3.h>
 
 Window::Window(int width, int height, std::string title)
@@ -31,12 +33,7 @@ bool Window::createWindow()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // We want OpenGL 3.3
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL 
-    // TODO: should make this it own thing.
-    glfwInitHint(GLFW_JOYSTICK_HAT_BUTTONS, GLFW_FALSE);
-    if (!glfw::initialize())
-    {
-        return false;
-    }
+
     m_glfwWindow = glfw::createWindow(m_width, m_height, m_windowTitle);
 
     if (!m_glfwWindow)

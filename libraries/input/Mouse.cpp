@@ -2,22 +2,15 @@
 
 #include <GLFW/glfw3.h>
 
+#include <GlfwApplication.h>
+#include <Window.h>
+
 Mouse::Mouse(InputDevice::Type type) noexcept: InputDevice(type) {}
 
 
 void Mouse::update()
 {
-
-    int numButtons = (int) m_buttonStates.size();
-    for (int buttonIndex = 0; buttonIndex < numButtons; buttonIndex++)
-    {
-        //m_buttonStates[buttonIndex] = glfwGetMouseButton(window, buttonIndex);
-    }
-}
-
-
-void Mouse::mouseUpdate(GLFWwindow* window)
-{
+    GLFWwindow* window = GlfwApplication::instance()->getWindow()->getWindowPtr();
     int numButtons = (int) m_buttonStates.size();
     for (int buttonIndex = 0; buttonIndex < numButtons; buttonIndex++)
     {
@@ -34,5 +27,4 @@ void Mouse::mouseUpdate(GLFWwindow* window)
     m_axisStates[MOUSE_AXIS_X] = (float) cursor.x;
 
     m_lastCursor = cursor;
-
 }

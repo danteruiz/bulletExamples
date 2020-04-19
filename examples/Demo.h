@@ -3,14 +3,12 @@
 #include "GlfwApplication.h"
 
 
+class Window;
+
 class DemoApplication : public GlfwApplication
 {
 public:
     DemoApplication();
 
-    int type;
-
-    void exec() override {}
-
-private:
+    void exec() override;
 };
