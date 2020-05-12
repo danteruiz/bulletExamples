@@ -19,8 +19,7 @@ public:
     int getHeight() const { return m_height; }
     int getWidth() const { return m_width; }
 
-    void setHeight(int height) { m_height = height; }
-    void setWidth(int width) { m_width = width; }
+    void setWidthAndHeight(int width, int height);
 
     GLFWwindow* getWindowPtr() const { return m_glfwWindow; }
 private:

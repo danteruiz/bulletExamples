@@ -7,6 +7,13 @@
 
 
 static GlfwApplication* g_application { nullptr };
+
+
+void onWindowSizeChanged(GLFWwindow* window, int width, int height) {
+    auto mainWindow = GlfwApplication::instance()->getWindow();
+    mainWindow->setWidthAndHeight(width, height);
+}
+
 GlfwApplication::GlfwApplication() {
 
     glfwInitHint(GLFW_JOYSTICK_HAT_BUTTONS, GLFW_FALSE);
@@ -25,6 +32,9 @@ GlfwApplication::GlfwApplication() {
 
     m_window = std::make_shared<Window>(500, 500, "Demo");
     m_window->createWindow();
+
+
+    glfwSetWindowSizeCallback(m_window->getWindowPtr(), onWindowSizeChanged);
 }
 
 

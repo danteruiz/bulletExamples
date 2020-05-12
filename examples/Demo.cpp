@@ -16,13 +16,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <GL/glew.h>
+
 #include <Shader.h>
 #include <Window.h>
 #include <Input.h>
 #include <InputChannels.h>
 #include <Mouse.h>
 #include <Keyboard.h>
+#include <Buffer.h>
+#include <GL/glew.h>
 
 
 static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
@@ -51,7 +53,7 @@ static std::vector<glm::vec3> vertices = {
 };
 
 
-static const std::vector<glm::vec3> floor_vertices = {
+static std::vector<glm::vec3> floor_vertices = {
     glm::vec3(1.0f, -2.0f, 1.0f),
     glm::vec3(1.0f, -2.0f, -1.0f),
     glm::vec3(-1.0f, -2.0f, 1.0f),
@@ -140,7 +142,6 @@ void updateCameraOrientation(std::shared_ptr<Mouse> const &mouse)
 void updateCameraPosition(std::shared_ptr<Keyboard> const &keyboard)
 {
     glm::quat orientation = camera.orientation;
-    std::cout << "W: " << glfw::KEY_W << " S: " << glfw::KEY_S << std::endl;
 
     float zDirection = (keyboard->getButton(glfw::KEY_S)  * -1.0f) + keyboard->getButton(glfw::KEY_W);
     float xDirection = (keyboard->getButton(glfw::KEY_D) * -1.0f) + keyboard->getButton(glfw::KEY_A);
@@ -155,7 +156,7 @@ std::function<void(int, int)> updateWindowSize;
 
 static glm::vec3 const up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-GLuint VBO, VAO, EBO, vbo2;
+GLuint VAO;
 std::vector<glm::vec3> vertexData;
 std::vector<int> indicesData;
 
@@ -182,16 +183,12 @@ DemoApplication::DemoApplication()
 
     glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_LINE_SMOOTH);
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-    glGenBuffers(1, &vbo2);
-
 
     std::copy(vertices.begin(), vertices.end(), std::back_inserter(vertexData));
     std::copy(floor_vertices.begin(), floor_vertices.end(), std::back_inserter(vertexData));
@@ -199,20 +196,12 @@ DemoApplication::DemoApplication()
     std::copy(indices.begin(), indices.end(), std::back_inserter(indicesData));
     std::copy(floor_indices.begin(), floor_indices.end(), std::back_inserter(indicesData));
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesData.size() * sizeof(int), indicesData.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(glm::vec3), vertexData.data(), GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
 
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo2);
-    glBufferData(GL_ARRAY_BUFFER, floor_vertices.size() * sizeof(glm::vec3), floor_vertices.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+    m_ebo = std::make_shared<Buffer>(Buffer::ELEMENT, indicesData.size() * sizeof(int), indices.size(), indicesData.data());
+    m_vbo = std::make_shared<Buffer>(Buffer::ARRAY, vertexData.size() * sizeof(glm::vec3), vertexData.size(), vertexData.data());
+    m_vbo2 = std::make_shared<Buffer>(Buffer::ARRAY, floor_vertices.size() * sizeof(glm::vec3), floor_vertices.size(), floor_vertices.data());
 
     shader1 = std::make_shared<Shader>(fragmentShaderC, vertexShaderC);
     shader2 = std::make_shared<Shader>(fragmentShaderB, vertexShaderC);
@@ -240,9 +229,6 @@ void DemoApplication::exec()
         updateCameraPosition(keyboard);
 
 
-        std::cout << mouse->getAxis(Mouse::MOUSE_AXIS_Y) << std::endl;
-
-
         glm::vec3 cameraFront = camera.orientation * UNIT_Z;
         glm::vec3 cameraUp = camera.orientation * UNIT_Y;
 
@@ -250,14 +236,15 @@ void DemoApplication::exec()
         glm::mat4 view = glm::lookAt(camera.position, cameraTarget, cameraUp);
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) m_window->getWidth() / (float) m_window->getHeight(), 0.3f, 100.0f);
 
+        std::cout << "Calling before" << std::endl;
         m_window->simpleUpdate();
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        std::cout << "Calling after simple update\n" << std::endl;
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
 
-        glBindBuffer(GL_ARRAY_BUFFER, vbo2);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+        m_vbo2->bind();
+        m_vbo2->setAttri(0, 3, sizeof(glm::vec3));
 
         shader1->bind();
         shader1->setUniformMat4("model", floorModel);
@@ -270,9 +257,8 @@ void DemoApplication::exec()
 
         glDrawElements(GL_TRIANGLES, (GLsizei) floor_indices.size(), GL_UNSIGNED_INT, (void*) (offset * sizeof(int)));
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+        m_vbo->bind();
+        m_vbo->setAttri(0, 3, sizeof(glm::vec3));
 
         model = glm::rotate(model, glm::radians(0.5f), glm::vec3(1.0f, 0.3f, 0.5f));
 
