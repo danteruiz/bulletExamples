@@ -12,11 +12,6 @@
 #include <memory>
 
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-
 #include <Shader.h>
 #include <Window.h>
 #include <Input.h>
@@ -26,61 +21,8 @@
 #include <Buffer.h>
 #include <GL/glew.h>
 
-
-static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
-
-
-static const std::string vertexShaderC = shaderPath + "simple.vs";
-static const std::string fragmentShaderC = shaderPath + "simple.fs";
-static const std::string fragmentShaderB = shaderPath + "simple2.fs";
-
-static const std::vector<glm::vec3> triangle = {
-    glm::vec3(-1.0f, -1.0f, 0.0f),
-    glm::vec3(1.0f, -1.0f, 0.0f),
-    glm::vec3(0.0f, 1.0f, 0.0f)
-};
-
-
-static std::vector<glm::vec3> vertices = {
-    glm::vec3(1.0f, 1.0f, 1.0f),
-    glm::vec3(1.0f, 1.0f, -1.0f),
-    glm::vec3(1.0f, -1.0f, 1.0f),
-    glm::vec3(1.0f, -1.0f, -1.0f),
-    glm::vec3(-1.0f, 1.0f, 1.0f),
-    glm::vec3(-1.0f, 1.0f, -1.0f),
-    glm::vec3(-1.0f, -1.0f, 1.0f),
-    glm::vec3(-1.0f, -1.0f, -1.0f)
-};
-
-
-static std::vector<glm::vec3> floor_vertices = {
-    glm::vec3(1.0f, -2.0f, 1.0f),
-    glm::vec3(1.0f, -2.0f, -1.0f),
-    glm::vec3(-1.0f, -2.0f, 1.0f),
-    glm::vec3(-1.0f, -2.0f, -1.0f)
-};
-
-
-static const std::vector<int> floor_indices = {
-    0, 3, 1,
-    0, 3, 2
-};
-
-static const std::vector<int> indices = {
-    0, 1, 2,
-    2, 1, 3,
-    0, 1, 4,
-    1, 4, 5,
-    4, 6, 5,
-    5, 6, 7,
-    0, 4, 2,
-    2, 4, 6,
-    2, 6, 3,
-    3, 6, 7,
-    1, 5, 3,
-    5, 3, 2
-};
-
+#include <BasicShapes.h>
+#include <Model.h>
 
 std::ostream& operator<<(std::ostream& os, const glm::quat& q)
 {
@@ -112,6 +54,25 @@ struct Camera
     glm::vec3 position;
     glm::quat orientation;
 };
+
+
+
+inline glm::mat4 getMatrix(Entity const &entity)
+{
+    glm::mat3 rot = glm::mat3_cast(entity.rotation);
+    rot[0] *= entity.scale.x;
+    rot[1] *= entity.scale.y;
+    rot[2] *= entity.scale.z;
+
+    glm::mat4 matrix;
+    matrix[0] = glm::vec4(rot[0], 0.0f);
+    matrix[1] = glm::vec4(rot[1], 0.0f);
+    matrix[2] = glm::vec4(rot[2], 0.0f);
+    matrix[3] = glm::vec4(entity.translation, 1.0f);
+
+
+    return matrix;
+}
 
 static Camera camera;
 
@@ -170,7 +131,6 @@ std::shared_ptr<Shader> shader2;
 
 
 glm::mat4 model;
-
 glm::mat4 floorModel;
 
 DemoApplication::DemoApplication()
@@ -190,40 +150,69 @@ DemoApplication::DemoApplication()
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    std::copy(vertices.begin(), vertices.end(), std::back_inserter(vertexData));
-    std::copy(floor_vertices.begin(), floor_vertices.end(), std::back_inserter(vertexData));
-
-    std::copy(indices.begin(), indices.end(), std::back_inserter(indicesData));
-    std::copy(floor_indices.begin(), floor_indices.end(), std::back_inserter(indicesData));
 
 
 
+    m_basicShapes = std::make_shared<BasicShapes>();
 
-    m_ebo = std::make_shared<Buffer>(Buffer::ELEMENT, indicesData.size() * sizeof(int), indices.size(), indicesData.data());
-    m_vbo = std::make_shared<Buffer>(Buffer::ARRAY, vertexData.size() * sizeof(glm::vec3), vertexData.size(), vertexData.data());
-    m_vbo2 = std::make_shared<Buffer>(Buffer::ARRAY, floor_vertices.size() * sizeof(glm::vec3), floor_vertices.size(), floor_vertices.data());
+    m_cubeEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
+    m_floorEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
+    m_sphereEntity.geometry = m_basicShapes->getShape(BasicShapes::SPHERE);
+    m_triangleEntity.geometry = m_basicShapes->getShape(BasicShapes::TRIANGLE);
 
-    shader1 = std::make_shared<Shader>(fragmentShaderC, vertexShaderC);
-    shader2 = std::make_shared<Shader>(fragmentShaderB, vertexShaderC);
 
-    floorModel = glm::translate(floorModel, glm::vec3(0.0f, -2.0f, 0.0f));
-    floorModel = glm::scale(floorModel, glm::vec3(5.0f, 0.0f, 5.0f));
+    m_cubeEntity.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    m_sphereEntity.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_triangleEntity.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+    m_floorEntity.color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    m_floorEntity.translation = glm::vec3(0.0f, -4.0f, 1.0f);
+    m_floorEntity.scale = glm::vec3(9.0f, 0.1f, 9.0f);
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
+
+
+    m_light.position = glm::vec3(0.0f, 8.0f, 1.0f);
 
     mouse = std::make_shared<Mouse>(InputDevice::MOUSE);
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
 }
 
+struct RenderArgs
+{
+    glm::mat4 view;
+    glm::mat4 projection;
+    std::vector<Entity> entities;
+    Light light;
+};
+
+void renderEntities(RenderArgs const &renderArgs)
+{
+    for (auto entity: renderArgs.entities)
+    {
+        auto geometry = entity.geometry;
+        auto shader = geometry->shader;
+        shader->bind();
+        shader->setUniformMat4("model", getMatrix(entity));
+        shader->setUniformMat4("projection", renderArgs.projection);
+        shader->setUniformMat4("view", renderArgs.view);
+        shader->setUniformVec4("color", entity.color);
+
+        for (auto mesh: geometry->meshes)
+        {
+            auto vertexBuffer = mesh.vertexBuffer;
+            vertexBuffer->bind();
+             vertexBuffer->setAttri(0, 3, sizeof(Vertex));
+
+            mesh.indexBuffer->bind();
+            glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+        }
+    }
+}
 
 void DemoApplication::exec()
 {
     while (!m_window->shouldClose())
     {
-
-        //input->pollInpout();
         mouse->update();
         updateCameraOrientation(mouse);
         updateCameraPosition(keyboard);
@@ -234,39 +223,19 @@ void DemoApplication::exec()
 
         glm::vec3 cameraTarget = camera.position + cameraFront;
         glm::mat4 view = glm::lookAt(camera.position, cameraTarget, cameraUp);
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) m_window->getWidth() / (float) m_window->getHeight(), 0.3f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float) m_window->getWidth() / (float) m_window->getHeight(), 0.3f, 700.0f);
 
-        std::cout << "Calling before" << std::endl;
+        RenderArgs renderArgs;
+        renderArgs.view = view;
+        renderArgs.projection = projection;
+        renderArgs.entities = { m_floorEntity, m_sphereEntity };
+        renderArgs.light = m_light;
+
         m_window->simpleUpdate();
-
-        std::cout << "Calling after simple update\n" << std::endl;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
 
-        m_vbo2->bind();
-        m_vbo2->setAttri(0, 3, sizeof(glm::vec3));
-
-        shader1->bind();
-        shader1->setUniformMat4("model", floorModel);
-        shader1->setUniformMat4("projection", projection);
-        shader1->setUniformMat4("view", view);
-
-        size_t offset = indices.size();
-        void* data = &indicesData[offset];
-        int* d = static_cast<int*>(data);
-
-        glDrawElements(GL_TRIANGLES, (GLsizei) floor_indices.size(), GL_UNSIGNED_INT, (void*) (offset * sizeof(int)));
-
-        m_vbo->bind();
-        m_vbo->setAttri(0, 3, sizeof(glm::vec3));
-
-        model = glm::rotate(model, glm::radians(0.5f), glm::vec3(1.0f, 0.3f, 0.5f));
-
-        shader2->bind();
-        shader2->setUniformMat4("model", model);
-        shader2->setUniformMat4("projection", projection);
-        shader2->setUniformMat4("view", view);
-        glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, 0);
+        renderEntities(renderArgs);
         m_window->swap();
     }
 }

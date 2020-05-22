@@ -11,7 +11,10 @@ class Shader;
 
 struct Vertex
 {
+    Vertex(glm::vec3 p, glm::vec3 n) : position(p), normal(n) {}
+    Vertex(glm::vec3 p) : position(p) {}
     glm::vec3 position;
+    glm::vec3 normal { 0.0f, 1.0f, 0.0f };
 };
 
 
@@ -25,10 +28,8 @@ struct Mesh
 
 
 
-struct Model
+struct Geometry
 {
     std::vector<Mesh> meshes;
     std::shared_ptr<Shader> shader;
 };
-
-// void loadModel(std::string const &filePath);

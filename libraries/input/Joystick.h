@@ -1,7 +1,6 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-
 #include "InputDevice.h"
 
 class Joystick : public InputDevice

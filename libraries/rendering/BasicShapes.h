@@ -1,12 +1,27 @@
 #pragma once
 
 #include <array>
+#include <memory>
 
 
-#include "Model.h"
-class Cube
+struct Geometry;
+class BasicShapes
 {
 public:
-    Cube();
-    ~Cube() = default;
+    enum ShapeTypes
+    {
+        CUBE = 0,
+        SPHERE,
+        TRIANGLE,
+        NUM_SHAPES
+    };
+
+    BasicShapes();
+
+    std::shared_ptr<Geometry> getShape(int type);
+
+
+
+private:
+    std::array<std::shared_ptr<Geometry>, NUM_SHAPES> m_shapes;
 };
