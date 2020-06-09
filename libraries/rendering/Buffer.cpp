@@ -20,6 +20,6 @@ void Buffer::unbind() const
 
 void Buffer::setAttri(unsigned int slot, unsigned int size, unsigned int stride, unsigned int s)
 {
-    glVertexAttribPointer(0, size, GL_FLOAT, GL_FALSE, stride, (void*)s);
+    glVertexAttribPointer(slot, size, GL_FLOAT, GL_FALSE, stride, (void*)s);
     glEnableVertexAttribArray(slot);
 }

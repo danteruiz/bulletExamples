@@ -20,6 +20,7 @@
 #include <Keyboard.h>
 #include <Buffer.h>
 #include <GL/glew.h>
+#include <imgui.h>
 
 #include <BasicShapes.h>
 #include <Model.h>
@@ -162,16 +163,19 @@ DemoApplication::DemoApplication()
 
 
     m_cubeEntity.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    m_sphereEntity.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_sphereEntity.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
     m_triangleEntity.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
-    m_floorEntity.color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    m_floorEntity.color = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);
     m_floorEntity.translation = glm::vec3(0.0f, -4.0f, 1.0f);
     m_floorEntity.scale = glm::vec3(9.0f, 0.1f, 9.0f);
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
 
 
-    m_light.position = glm::vec3(0.0f, 8.0f, 1.0f);
+    m_light.position = glm::vec3(-1.6f, 8.0f, 0.0f);
+    m_light.ambient = 0.05f;
+    m_light.intensity = 0.9f;
+    m_light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 
     mouse = std::make_shared<Mouse>(InputDevice::MOUSE);
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
@@ -195,13 +199,21 @@ void renderEntities(RenderArgs const &renderArgs)
         shader->setUniformMat4("model", getMatrix(entity));
         shader->setUniformMat4("projection", renderArgs.projection);
         shader->setUniformMat4("view", renderArgs.view);
-        shader->setUniformVec4("color", entity.color);
+        shader->setUniformVec4("material.color", entity.color);
+        shader->setUniform1f("light.intensity", renderArgs.light.intensity);
+        shader->setUniform1f("light.ambient", renderArgs.light.ambient);
+        shader->setUniformVec3("light.color", renderArgs.light.color);
+        shader->setUniformVec3("light.position", renderArgs.light.position);
+        shader->setUniformVec3("cameraPosition", camera.position);
+        shader->setUniform1f("material.specular", 0.8f);
+        shader->setUniform1f("material.shininess", 32.0f);
 
         for (auto mesh: geometry->meshes)
         {
             auto vertexBuffer = mesh.vertexBuffer;
             vertexBuffer->bind();
-             vertexBuffer->setAttri(0, 3, sizeof(Vertex));
+            vertexBuffer->setAttri(0, 3, sizeof(Vertex));
+            vertexBuffer->setAttri(1, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
 
             mesh.indexBuffer->bind();
             glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -228,7 +240,7 @@ void DemoApplication::exec()
         RenderArgs renderArgs;
         renderArgs.view = view;
         renderArgs.projection = projection;
-        renderArgs.entities = { m_floorEntity, m_sphereEntity };
+        renderArgs.entities = {m_floorEntity, m_sphereEntity };
         renderArgs.light = m_light;
 
         m_window->simpleUpdate();

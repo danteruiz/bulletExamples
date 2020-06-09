@@ -45,14 +45,16 @@ namespace shader {
         char* infoLog = new char[infoLength];
         glGetShaderInfoLog(programObject, infoLength, NULL, infoLog);
 
-        delete infoLog;
 
+        bool success = true;
         if (!compiled) {
             std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
-            return false;
+            success = false;
         }
 
-        return true;
+
+        delete infoLog;
+        return success;
     }
 
     GLuint buildProgram(const std::vector<GLuint>& shaders)

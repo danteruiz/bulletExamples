@@ -127,30 +127,63 @@ std::shared_ptr<Geometry> buildCube()
 
     Mesh mesh;
     mesh.vertices = {
-        Vertex(glm::vec3(1.0f, 1.0f, 1.0f)),
-        Vertex(glm::vec3(1.0f, 1.0f, -1.0f)),
-        Vertex(glm::vec3(1.0f, -1.0f, 1.0f)),
-        Vertex(glm::vec3(1.0f, -1.0f, -1.0f)),
-        Vertex(glm::vec3(-1.0f, 1.0f, 1.0f)),
-        Vertex(glm::vec3(-1.0f, 1.0f, -1.0f)),
-        Vertex(glm::vec3(-1.0f, -1.0f, 1.0f)),
-        Vertex(glm::vec3(-1.0f, -1.0f, -1.0f))
+        // right side 0 - 3
+        Vertex(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+        Vertex(glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+        Vertex(glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+        Vertex(glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+
+        //top side 4 - 7
+        Vertex(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+        Vertex(glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+        Vertex(glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+        Vertex(glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+
+        //bottom side 8 - 11
+        Vertex(glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+        Vertex(glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+        Vertex(glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+        Vertex(glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+
+        // left 12 - 15
+        Vertex(glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(-1.0f, 0.0f, 0.0f)),
+        Vertex(glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(-1.0f, 0.0f, 0.0f)),
+        Vertex(glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(-1.0f, 0.0f, 0.0f)),
+        Vertex(glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(-1.0f, 0.0f, 0.0f)),
+
+        // front 16 - 19
+        Vertex(glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(0.0f, 0.0, -1.0f)),
+        Vertex(glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.0f, 0.0, -1.0f)),
+        Vertex(glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f, 0.0, -1.0f)),
+        Vertex(glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(0.0f, 0.0, -1.0f)),
+
+        //back 20 - 23
+        Vertex(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        Vertex(glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        Vertex(glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        Vertex(glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f))
     };
 
 
     mesh.indices = {
+        // right side
         0, 1, 2,
         2, 1, 3,
-        0, 1, 4,
-        1, 4, 5,
-        4, 6, 5,
-        5, 6, 7,
-        0, 4, 2,
-        2, 4, 6,
-        2, 6, 3,
-        3, 6, 7,
-        1, 5, 3,
-        5, 3, 2
+        //top side
+        4, 5 , 6,
+        4, 6, 7,
+        // bottom
+        8, 9, 10,
+        8, 10, 11,
+        //left
+        12, 13, 14,
+        12, 14, 15,
+        //front
+        16, 17, 18,
+        16, 18, 19,
+        //back
+        20, 21, 22,
+        20, 22, 23
     };
 
     mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());

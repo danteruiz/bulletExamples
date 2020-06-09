@@ -8,3 +8,5 @@ else()
 endif()
 
 link_personal_libraries(render input core)
+
+target_link_libraries(${TARGET_NAME} PRIVATE CONAN_PKG::imgui)
