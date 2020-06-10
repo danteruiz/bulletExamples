@@ -41,24 +41,10 @@ namespace imgui
         bool active = true;
         bool active2 = false;
         ImGui::RadioButton("Radio Button", active);
-        ImGui::RadioButton("Radio Button", active2);
-
-        std::vector<std::string> elements = { "One", "Two", "Three" };
-
-        static auto vector_getter = [](void* vec, int idx, const char** out_text)
-        {
-            auto& vector = *static_cast<std::vector<std::string>*>(vec);
-            if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
-            *out_text = vector.at(idx).c_str();
-            return true;
-        };
-
-        //ImGui::Combo("combo", &index, 
-        ImGui::ListBox("List Box: ",&index, vector_getter, static_cast<void*>(&elements), elements.size(), 4);
+        ImGui::RadioButton("Radio Button", active2);]
 
         char* s = new char[100];
         size_t size = 100;
-        ImGui::InputText("Input Text", s, size);
         std::cout << "collapsed: " << ImGui::CollapsingHeader("header") << std::endl;
         ImGui::Text("Insider header");
 

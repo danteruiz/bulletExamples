@@ -23,8 +23,7 @@
 #include <BasicShapes.h>
 #include <Model.h>
 
-#include <imgui/Frame.h>
-#include <imgui/Button.h>
+#include <imgui/Imgui.h>
 
 std::ostream& operator<<(std::ostream& os, const glm::quat& q)
 {
@@ -180,12 +179,6 @@ DemoApplication::DemoApplication()
 
     mouse = std::make_shared<Mouse>(InputDevice::MOUSE);
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
-
-
-    m_imgui = std::make_shared<imgui::Imgui>(m_window->getWindowPtr());
-    imgui::Frame *frame = new imgui::TestFrame("Frame 1");
-
-    m_imgui->addFrame(frame);
 }
 
 struct RenderArgs
@@ -233,9 +226,6 @@ void DemoApplication::exec()
     while (!m_window->shouldClose())
     {
         m_window->simpleUpdate();
-
-        m_imgui->composeFrames();
-
         float f = 0.0f;
         mouse->update();
         updateCameraOrientation(mouse);
@@ -259,11 +249,6 @@ void DemoApplication::exec()
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
 
         renderEntities(renderArgs);
-
-
-        m_imgui->render();
-        //ImGui::Render();
-        //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         m_window->swap();
     }
 }

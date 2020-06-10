@@ -3,12 +3,9 @@
 #include <imgui.h>
 #include "bindings/imgui_impl_glfw.h"
 #include "bindings/imgui_impl_opengl3.h"
-
-#include "Frame.h"
 namespace imgui
 {
-
-    Imgui::Imgui(GLFWwindow *window)
+    void initalize(GLFWwindow *window)
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -17,23 +14,34 @@ namespace imgui
         ImGui_ImplOpenGL3_Init("#version 130");
         ImGui::StyleColorsDark();
     }
+    void uninitialize()
+    {
+    }
 
-    void Imgui::render() {
+    void render()
+    {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    void Imgui::addFrame(imgui::Frame *frame) { m_frames.push_back(frame); }
-
-    void Imgui::composeFrames()
+    void newFrame()
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        for (auto frame : m_frames)
-        {
-            frame->compose();
-        }
     }
 
+
+    static auto vector_getter = [](void* vec, int idx, const char** out_text)
+    {
+        auto& vector = *static_cast<std::vector<std::string>*>(vec);
+        if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
+        *out_text = vector.at(idx).c_str();
+        return true;
+    };
+
+    bool ListBox(std::string name, int* index, std::vector<std::string> &items)
+    {
+        ImGui::ListBox(name.c_str(), index, vector_getter, static_cast<void*>(items.data()));
+    }
 }

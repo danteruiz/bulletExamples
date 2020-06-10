@@ -3,7 +3,6 @@
 #include "GlfwApplication.h"
 #include <memory>
 
-#include <imgui/Imgui.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -58,5 +57,4 @@ private:
     Entity m_triangleEntity;
     Light m_light;
     std::shared_ptr<BasicShapes> m_basicShapes;
-    std::shared_ptr<imgui::Imgui> m_imgui;
 };

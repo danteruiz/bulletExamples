@@ -8,7 +8,8 @@ add_library(${TARGET_NAME} STATIC ${ui_headers} ${ui_source})
 
 link_personal_libraries(core render)
 
-target_link_libraries(${TARGET_NAME} PRIVATE CONAN_PKG::imgui CONAN_PKG::glfw)
+target_link_libraries(${TARGET_NAME} PRIVATE CONAN_PKG::glfw)
+target_link_libraries(${TARGET_NAME} PUBLIC CONAN_PKG::imgui)
 target_include_directories(${TARGET_NAME}
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
