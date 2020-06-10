@@ -5,3 +5,12 @@ bullet/2.87@bincrafters/stable
 Assimp/4.1.0@jacmoe/stable 
 glew/2.1.0@bincrafters/stable
 imgui/1.69@bincrafters/stable
+
+
+[imports]
+./misc/bindings, imgui_impl_glfw.cpp -> ../libraries/ui/imgui/bindings
+./misc/bindings, imgui_impl_opengl3.cpp -> ../libraries/ui/imgui/bindings
+./misc/bindings, imgui_impl_glfw.h -> ../libraries/ui/imgui/bindings
+./misc/bindings, imgui_impl_opengl3.h -> ../libraries/ui/imgui/bindings
+./misc/cpp/, imgui_stdlib.h -> ../libraries/ui/imgui/bindings
+./misc/cpp/, imgui_stdlib.cpp -> ../libraries/ui/imgui/bindings

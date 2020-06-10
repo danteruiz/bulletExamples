@@ -20,10 +20,11 @@
 #include <Keyboard.h>
 #include <Buffer.h>
 #include <GL/glew.h>
-#include <imgui.h>
-
 #include <BasicShapes.h>
 #include <Model.h>
+
+#include <imgui/Frame.h>
+#include <imgui/Button.h>
 
 std::ostream& operator<<(std::ostream& os, const glm::quat& q)
 {
@@ -179,6 +180,12 @@ DemoApplication::DemoApplication()
 
     mouse = std::make_shared<Mouse>(InputDevice::MOUSE);
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
+
+
+    m_imgui = std::make_shared<imgui::Imgui>(m_window->getWindowPtr());
+    imgui::Frame *frame = new imgui::TestFrame("Frame 1");
+
+    m_imgui->addFrame(frame);
 }
 
 struct RenderArgs
@@ -225,6 +232,11 @@ void DemoApplication::exec()
 {
     while (!m_window->shouldClose())
     {
+        m_window->simpleUpdate();
+
+        m_imgui->composeFrames();
+
+        float f = 0.0f;
         mouse->update();
         updateCameraOrientation(mouse);
         updateCameraPosition(keyboard);
@@ -243,11 +255,15 @@ void DemoApplication::exec()
         renderArgs.entities = {m_floorEntity, m_sphereEntity };
         renderArgs.light = m_light;
 
-        m_window->simpleUpdate();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
 
         renderEntities(renderArgs);
+
+
+        m_imgui->render();
+        //ImGui::Render();
+        //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         m_window->swap();
     }
 }
