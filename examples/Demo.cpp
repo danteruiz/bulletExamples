@@ -25,25 +25,8 @@
 
 #include <imgui/Imgui.h>
 
-std::ostream& operator<<(std::ostream& os, const glm::quat& q)
-{
-    os << "w: " << q.w;
-    os << " x: " << q.x;
-    os << " y: " << q.y;
-    os << " z: " << q.z;
-
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const glm::vec3& v)
-{
-    os << "x: " << v.x;
-    os << " y: " << v.y;
-    os << " z: " << v.z;
-
-    return os;
-}
-
+#include "DebugUI.h"
+#include "Helper.h"
 
 static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
 static glm::vec3 const UNIT_X(1.0f, 0.0f, 0.0f);
@@ -154,21 +137,29 @@ DemoApplication::DemoApplication()
 
 
 
+    m_debugUI = std::make_shared<DebugUI>(m_window);
     m_basicShapes = std::make_shared<BasicShapes>();
 
-    m_cubeEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
-    m_floorEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
-    m_sphereEntity.geometry = m_basicShapes->getShape(BasicShapes::SPHERE);
-    m_triangleEntity.geometry = m_basicShapes->getShape(BasicShapes::TRIANGLE);
+    Entity cubeEntity;
+    Entity floorEntity;
+    Entity sphereEntity;
+    Entity triangleEntity;
+    cubeEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
+    floorEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
+    sphereEntity.geometry = m_basicShapes->getShape(BasicShapes::SPHERE);
+    triangleEntity.geometry = m_basicShapes->getShape(BasicShapes::TRIANGLE);
 
 
-    m_cubeEntity.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    m_sphereEntity.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    m_triangleEntity.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    cubeEntity.name = "cube";
+    sphereEntity.name = "sphere";
+    floorEntity.name = "floor";
+    cubeEntity.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    sphereEntity.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    triangleEntity.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
-    m_floorEntity.color = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);
-    m_floorEntity.translation = glm::vec3(0.0f, -4.0f, 1.0f);
-    m_floorEntity.scale = glm::vec3(9.0f, 0.1f, 9.0f);
+    floorEntity.color = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);
+    floorEntity.translation = glm::vec3(0.0f, -4.0f, 1.0f);
+    floorEntity.scale = glm::vec3(9.0f, 0.1f, 9.0f);
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
 
 
@@ -179,6 +170,9 @@ DemoApplication::DemoApplication()
 
     mouse = std::make_shared<Mouse>(InputDevice::MOUSE);
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
+
+
+    m_entities = { floorEntity, sphereEntity };
 }
 
 struct RenderArgs
@@ -228,7 +222,7 @@ void DemoApplication::exec()
         m_window->simpleUpdate();
         float f = 0.0f;
         mouse->update();
-        updateCameraOrientation(mouse);
+        //updateCameraOrientation(mouse);
         updateCameraPosition(keyboard);
 
 
@@ -239,16 +233,18 @@ void DemoApplication::exec()
         glm::mat4 view = glm::lookAt(camera.position, cameraTarget, cameraUp);
         glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float) m_window->getWidth() / (float) m_window->getHeight(), 0.3f, 700.0f);
 
+
+        m_debugUI->show(m_entities, m_light);
         RenderArgs renderArgs;
         renderArgs.view = view;
         renderArgs.projection = projection;
-        renderArgs.entities = {m_floorEntity, m_sphereEntity };
+        renderArgs.entities = m_entities;
         renderArgs.light = m_light;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
-
         renderEntities(renderArgs);
+        imgui::render();
         m_window->swap();
     }
 }

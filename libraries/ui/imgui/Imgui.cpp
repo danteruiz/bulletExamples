@@ -3,9 +3,18 @@
 #include <imgui.h>
 #include "bindings/imgui_impl_glfw.h"
 #include "bindings/imgui_impl_opengl3.h"
+
+
+static auto vector_getter = [](void* vec, int idx, const char** out_text)
+ {
+     auto& vector = *static_cast<std::vector<std::string>*>(vec);
+     if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
+     *out_text = vector.at(idx).c_str();
+     return true;
+ };
 namespace imgui
 {
-    void initalize(GLFWwindow *window)
+    void initialize(GLFWwindow *window)
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -31,17 +40,8 @@ namespace imgui
         ImGui::NewFrame();
     }
 
-
-    static auto vector_getter = [](void* vec, int idx, const char** out_text)
-    {
-        auto& vector = *static_cast<std::vector<std::string>*>(vec);
-        if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
-        *out_text = vector.at(idx).c_str();
-        return true;
-    };
-
     bool ListBox(std::string name, int* index, std::vector<std::string> &items)
     {
-        ImGui::ListBox(name.c_str(), index, vector_getter, static_cast<void*>(items.data()));
+        return ImGui::ListBox(name.c_str(), index, vector_getter, static_cast<void*>(&items), (int) items.size());
     }
 }

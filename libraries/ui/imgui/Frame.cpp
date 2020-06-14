@@ -41,7 +41,7 @@ namespace imgui
         bool active = true;
         bool active2 = false;
         ImGui::RadioButton("Radio Button", active);
-        ImGui::RadioButton("Radio Button", active2);]
+        ImGui::RadioButton("Radio Button", active2);
 
         char* s = new char[100];
         size_t size = 100;
