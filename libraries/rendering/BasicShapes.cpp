@@ -10,54 +10,36 @@ static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/
 static const std::string vertexShader = shaderPath + "simple.vs";
 static const std::string fragmentShader = shaderPath + "simple.fs";
 
-static float const PI = 3.1415926f;
-static float const RADIUS = 1.0f;
+static float const  PI = 3.14159265359;
 
- static float const SECTOR_COUNT = 72.0f;
-static float const STACK_COUNT = 24.0f;
-
-inline float calculateStackAngle(int step)
-{
-    return (PI / 2) - (PI * (step / STACK_COUNT));
-}
-
-inline float calculateSectorAngle(int step)
-{
-    return (2.0f * PI) * (step / SECTOR_COUNT);
-}
+static int const X_SEGMENTS = 256.0f;
+static int const Y_SEGMENTS = 256.0f;
 std::shared_ptr<Geometry> buildSphere()
 {
-
-    static float const LENGTH_INV = 1.0f / RADIUS;
-
     Mesh mesh;
-    for (int i = 0; i <= STACK_COUNT; ++i)
+
+    for (int y = 0; y <= Y_SEGMENTS; ++y)
     {
-        float stackAngle = calculateStackAngle(i);
-        float xy = RADIUS * std::cosf(stackAngle);
-        float z = RADIUS * std::sinf(stackAngle);
-
-        for (int j = 0; j <= SECTOR_COUNT; ++j)
+        for (int x = 0; x <= X_SEGMENTS; ++x)
         {
-            float sectorAngle = calculateSectorAngle(j);
-            float x = xy * std::cosf(sectorAngle);
-            float y = xy * std::sinf(sectorAngle);
+            float xSegment = (float)x / (float)X_SEGMENTS;
+            float ySegment = (float)y / (float)Y_SEGMENTS;
 
-            float nx = x * LENGTH_INV;
-            float ny = y * LENGTH_INV;
-            float nz = z * LENGTH_INV;
+            float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
+            float yPos = std::cos(ySegment * PI);
+            float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
 
-            Vertex vertex({ x, y, z }, { nx, ny, nz });
+            Vertex vertex({xPos, yPos, zPos}, {xPos, yPos, zPos});
             mesh.vertices.push_back(vertex);
         }
     }
 
-    for (int i = 0; i < STACK_COUNT; ++i)
+    for (int i = 0; i < Y_SEGMENTS; ++i)
     {
-        int k1 = i * (SECTOR_COUNT + 1);
-        int k2 = k1 + SECTOR_COUNT + 1;
+        int k1 = i * (X_SEGMENTS + 1);
+        int k2 = k1 + X_SEGMENTS + 1;
 
-        for (int j = 0; j < SECTOR_COUNT; ++j, ++k1, ++k2)
+        for (int j = 0; j < X_SEGMENTS; ++j, ++k1, ++k2)
         {
             if (i != 0)
             {
@@ -66,7 +48,7 @@ std::shared_ptr<Geometry> buildSphere()
                 mesh.indices.push_back(k1 + 1);
             }
 
-            if (i != (STACK_COUNT -1))
+            if (i != (Y_SEGMENTS -1))
             {
                 mesh.indices.push_back(k1 + 1);
                 mesh.indices.push_back(k2);

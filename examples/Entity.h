@@ -27,7 +27,8 @@ struct Entity
 
     glm::vec4 color  { 1.0f, 1.0f, 1.0f, 1.0f };
     float specular { 1.0f };
-    float shininess { 32.0f };
+    float metallic { 1.0f };
+    float roughness { 1.0f };
     std::shared_ptr<Geometry> geometry { nullptr };
 };
 

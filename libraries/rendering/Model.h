@@ -33,3 +33,6 @@ struct Geometry
     std::vector<Mesh> meshes;
     std::shared_ptr<Shader> shader;
 };
+
+
+std::shared_ptr<Geometry> loadModel(std::string const &file);

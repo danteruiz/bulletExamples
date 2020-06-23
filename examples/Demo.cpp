@@ -28,10 +28,16 @@
 #include "DebugUI.h"
 #include "Helper.h"
 
+static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
+static const std::string vertexShader = shaderPath + "simple.vs";
+static const std::string fragmentShader = shaderPath + "simple.fs";
+
+
+static std::string const suzanne("C:/Users/dante/code/rendering-examples/resources/models/Suzanne.obj");
+
 static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
 static glm::vec3 const UNIT_X(1.0f, 0.0f, 0.0f);
 static glm::vec3 const UNIT_Y(0.0f, 1.0f, 0.0f);
-
 
 struct Camera
 {
@@ -143,24 +149,27 @@ DemoApplication::DemoApplication()
     Entity cubeEntity;
     Entity floorEntity;
     Entity sphereEntity;
-    Entity triangleEntity;
+    Entity suzanneEntity;
     cubeEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
     floorEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
     sphereEntity.geometry = m_basicShapes->getShape(BasicShapes::SPHERE);
-    triangleEntity.geometry = m_basicShapes->getShape(BasicShapes::TRIANGLE);
+    suzanneEntity.geometry = loadModel(suzanne);
 
 
     cubeEntity.name = "cube";
     sphereEntity.name = "sphere";
     floorEntity.name = "floor";
+    suzanneEntity.name = "suzanne";
     cubeEntity.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
     sphereEntity.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    triangleEntity.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    suzanneEntity.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
     floorEntity.color = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);
     floorEntity.translation = glm::vec3(0.0f, -4.0f, 1.0f);
-    floorEntity.scale = glm::vec3(9.0f, 0.1f, 9.0f);
+    floorEntity.scale = glm::vec3(30.0f, 0.1f, 30.0f);
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
+
+    suzanneEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 0.0f, 180.0f)));
 
 
     m_light.position = glm::vec3(-1.6f, 8.0f, 0.0f);
@@ -172,7 +181,8 @@ DemoApplication::DemoApplication()
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
 
 
-    m_entities = { floorEntity, sphereEntity };
+    m_entities = { floorEntity, suzanneEntity };
+    m_pipeline = std::make_shared<Shader>(fragmentShader, vertexShader);
 }
 
 struct RenderArgs
@@ -181,14 +191,16 @@ struct RenderArgs
     glm::mat4 projection;
     std::vector<Entity> entities;
     Light light;
+    std::shared_ptr<Shader> shader;
 };
 
 void renderEntities(RenderArgs const &renderArgs)
 {
+
+    auto shader = renderArgs.shader;
     for (auto entity: renderArgs.entities)
     {
         auto geometry = entity.geometry;
-        auto shader = geometry->shader;
         shader->bind();
         shader->setUniformMat4("model", getMatrix(entity));
         shader->setUniformMat4("projection", renderArgs.projection);
@@ -199,8 +211,9 @@ void renderEntities(RenderArgs const &renderArgs)
         shader->setUniformVec3("light.color", renderArgs.light.color);
         shader->setUniformVec3("light.position", renderArgs.light.position);
         shader->setUniformVec3("cameraPosition", camera.position);
-        shader->setUniform1f("material.specular", 0.8f);
-        shader->setUniform1f("material.shininess", 32.0f);
+        shader->setUniform1f("material.specular", entity.specular);
+        shader->setUniform1f("material.roughness", entity.roughness);
+        shader->setUniform1f("material.metallic", entity.metallic);
 
         for (auto mesh: geometry->meshes)
         {
@@ -222,8 +235,11 @@ void DemoApplication::exec()
         m_window->simpleUpdate();
         float f = 0.0f;
         mouse->update();
-        //updateCameraOrientation(mouse);
-        updateCameraPosition(keyboard);
+        if (!m_debugUI->focus())
+        {
+            updateCameraOrientation(mouse);
+            updateCameraPosition(keyboard);
+        }
 
 
         glm::vec3 cameraFront = camera.orientation * UNIT_Z;
@@ -234,12 +250,15 @@ void DemoApplication::exec()
         glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float) m_window->getWidth() / (float) m_window->getHeight(), 0.3f, 700.0f);
 
 
-        m_debugUI->show(m_entities, m_light);
+        m_debugUI->show(m_entities, m_light, [&] {
+            m_pipeline = std::make_shared<Shader> (fragmentShader, vertexShader);
+        });
         RenderArgs renderArgs;
         renderArgs.view = view;
         renderArgs.projection = projection;
         renderArgs.entities = m_entities;
         renderArgs.light = m_light;
+        renderArgs.shader = m_pipeline;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);

@@ -30,7 +30,7 @@ GlfwApplication::GlfwApplication() {
     m_string = "This is not a test";
 
 
-    m_window = std::make_shared<Window>(500, 500, "Demo");
+    m_window = std::make_shared<Window>(1800, 1200, "Demo");
     m_window->createWindow();
 
 

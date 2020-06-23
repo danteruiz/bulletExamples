@@ -13,6 +13,7 @@ class Buffer;
 class BasicShapes;
 class DebugUI;
 struct Geometry;
+class Shader;
 
 
 class DemoApplication : public GlfwApplication
@@ -28,4 +29,6 @@ private:
     Light m_light;
     std::shared_ptr<BasicShapes> m_basicShapes;
     std::shared_ptr<DebugUI> m_debugUI;
+
+    std::shared_ptr<Shader> m_pipeline { nullptr };
 };

@@ -11,6 +11,6 @@ out vec3 vNormal;
 out vec3 vPosition;
 void main() {
     vPosition = mat3(model) * aPos;
-    vNormal = aNormal;
+    vNormal = normalize(mat3(model) * aNormal);
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }
