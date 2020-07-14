@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
+#include <chrono>
 
 
 #include <Shader.h>
@@ -31,7 +32,8 @@
 static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
 static const std::string vertexShader = shaderPath + "simple.vs";
 static const std::string fragmentShader = shaderPath + "simple.fs";
-
+static const std::string debugFragmentShader = shaderPath + "debug.fs";
+static const std::string debugVertexShader = shaderPath + "debug.vs";
 
 static std::string const suzanne("C:/Users/dante/code/rendering-examples/resources/models/Suzanne.obj");
 
@@ -45,6 +47,23 @@ struct Camera
     glm::quat orientation;
 };
 
+
+inline glm::mat4 getMatrix(Marker const &marker)
+{
+    glm::mat3 rot = glm::mat3_cast(marker.orientation);
+    rot[0] *= marker.scale.x;
+    rot[1] *= marker.scale.y;
+    rot[2] *= marker.scale.z;
+
+    glm::mat4 matrix;
+    matrix[0] = glm::vec4(rot[0], 0.0f);
+    matrix[1] = glm::vec4(rot[1], 0.0f);
+    matrix[2] = glm::vec4(rot[2], 0.0f);
+    matrix[3] = glm::vec4(marker.position, 1.0f);
+
+
+    return matrix;
+};
 
 
 inline glm::mat4 getMatrix(Entity const &entity)
@@ -69,17 +88,17 @@ static Camera camera;
 
 float pitch { 0.0f };
 float yaw { 0.0f };
-void updateCameraOrientation(std::shared_ptr<Mouse> const &mouse)
+void updateCameraOrientation(std::shared_ptr<Mouse> const &mouse, float deltaTime)
 {
     if (mouse->getButton(Mouse::MOUSE_BUTTON_LEFT))
     {
-        static float const sensitivity = 0.05f;
+        static float const sensitivity = 4.0f;
         float xOffset = mouse->getAxis(Mouse::MOUSE_AXIS_X_DELTA) * sensitivity;
         float yOffset = mouse->getAxis(Mouse::MOUSE_AXIS_Y_DELTA) * sensitivity;
 
 
-        yaw += (-1.0f * xOffset);
-        pitch += yOffset;
+        yaw += (-1.0f * xOffset) * deltaTime;
+        pitch += yOffset * deltaTime;
 
         pitch = std::clamp(pitch, -89.9f, 89.9f);
 
@@ -90,17 +109,17 @@ void updateCameraOrientation(std::shared_ptr<Mouse> const &mouse)
 }
 
 
-void updateCameraPosition(std::shared_ptr<Keyboard> const &keyboard)
+void updateCameraPosition(std::shared_ptr<Keyboard> const &keyboard, float deltaTime)
 {
     glm::quat orientation = camera.orientation;
 
     float zDirection = (keyboard->getButton(glfw::KEY_S)  * -1.0f) + keyboard->getButton(glfw::KEY_W);
     float xDirection = (keyboard->getButton(glfw::KEY_D) * -1.0f) + keyboard->getButton(glfw::KEY_A);
 
-    glm::vec3 zOffset = (orientation * UNIT_Z) * zDirection;
-    glm::vec3 xOffset = (orientation * UNIT_X) * xDirection;
+    glm::vec3 zOffset = (orientation * UNIT_Z) * zDirection * 20.0f;
+    glm::vec3 xOffset = (orientation * UNIT_X) * xDirection * 20.0f;
 
-    camera.position += zOffset  + xOffset;
+    camera.position += (zOffset  + xOffset) * deltaTime;
 }
 
 std::function<void(int, int)> updateWindowSize;
@@ -123,6 +142,44 @@ std::shared_ptr<Shader> shader2;
 glm::mat4 model;
 glm::mat4 floorModel;
 
+
+struct MarkerVertex
+{
+    MarkerVertex(glm::vec3 pos, glm::vec3 col) : position(pos), color(col) {}
+    glm::vec3 position;
+    glm::vec3 color;
+};
+
+DebugDraw::DebugDraw()
+{
+    std::vector<MarkerVertex> positions = {
+        MarkerVertex(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+        MarkerVertex(glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+        MarkerVertex(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+        MarkerVertex(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+        MarkerVertex(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+        MarkerVertex(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 1.0f))
+    };
+
+    m_vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, positions.size() * sizeof(MarkerVertex), positions.size(), positions.data());
+    m_debugPipeline = std::make_shared<Shader>(debugFragmentShader, debugVertexShader);
+}
+
+void DebugDraw::renderMarkers(std::vector<Marker> const  &markers, glm::mat4 const &view, glm::mat4 const &projection) {
+
+    m_vertexBuffer->bind();
+    m_vertexBuffer->setAttri(0, 3, sizeof(MarkerVertex));
+    m_vertexBuffer->setAttri(1, 3, sizeof(MarkerVertex), (unsigned int) offsetof(MarkerVertex, color));
+    m_debugPipeline->bind();
+    m_debugPipeline->setUniformMat4("view", view);
+    m_debugPipeline->setUniformMat4("projection", projection);
+    for (auto marker : markers)
+    {
+        glm::mat4 model = getMatrix(marker);
+        m_debugPipeline->setUniformMat4("model", model);
+        glDrawArrays(GL_LINES, 0, 6);
+    }
+}
 DemoApplication::DemoApplication()
 {
     glewExperimental = true;
@@ -183,6 +240,7 @@ DemoApplication::DemoApplication()
 
     m_entities = { floorEntity, suzanneEntity };
     m_pipeline = std::make_shared<Shader>(fragmentShader, vertexShader);
+    m_debugDraw = std::make_shared<DebugDraw>();
 }
 
 struct RenderArgs
@@ -228,17 +286,46 @@ void renderEntities(RenderArgs const &renderArgs)
     }
 }
 
+
+
+
+std::vector<Marker> getMarkers(RenderArgs const &renderArgs) {
+    Marker light;
+    light.position = renderArgs.light.position;
+
+    std::vector<Marker> markers;
+    for (auto entity : renderArgs.entities) {
+        Marker entityMarker;
+        entityMarker.position = entity.translation;
+        entityMarker.orientation = entity.rotation;
+        markers.push_back(entityMarker);
+    }
+    markers.push_back(light);
+
+    return markers;
+}
 void DemoApplication::exec()
 {
+    auto currentTime = std::chrono::steady_clock::now();
+    auto previousTime = currentTime;
     while (!m_window->shouldClose())
     {
+
+        currentTime = std::chrono::steady_clock::now();
+
+
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime);
+
+        previousTime = currentTime;
+        float deltaTime = (float) elapsed.count() / 1000.0f;
+        // std::cout << deltaTime << std::endl;
         m_window->simpleUpdate();
         float f = 0.0f;
         mouse->update();
         if (!m_debugUI->focus())
         {
-            updateCameraOrientation(mouse);
-            updateCameraPosition(keyboard);
+            updateCameraOrientation(mouse, deltaTime);
+            updateCameraPosition(keyboard, deltaTime);
         }
 
 
@@ -263,6 +350,7 @@ void DemoApplication::exec()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
         renderEntities(renderArgs);
+        m_debugDraw->renderMarkers(getMarkers(renderArgs), view, projection);
         imgui::render();
         m_window->swap();
     }

@@ -19,9 +19,6 @@ public:
     BasicShapes();
 
     std::shared_ptr<Geometry> getShape(int type);
-
-
-
 private:
     std::array<std::shared_ptr<Geometry>, NUM_SHAPES> m_shapes;
 };

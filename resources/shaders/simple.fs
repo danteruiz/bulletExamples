@@ -100,7 +100,7 @@ void main() {
 
 
     vec3 lo = (kd * material.color.rgb / PI + specular) * radiance * cosTi;
-    vec3 ambient = vec3(0.2) * material.color.rgb * light.ambient;
+    vec3 ambient = vec3(0.8) * material.color.rgb * light.ambient;
     vec3 color = ambient + lo;
     FragColor = vec4(color, 1.0);
 }
