@@ -26,7 +26,6 @@ class DebugDraw
 {
 public:
     DebugDraw();
-
     void renderMarkers(std::vector<Marker> const &markers, glm::mat4 const &view, glm::mat4 const &projection);
 private:
     std::shared_ptr<Buffer> m_vertexBuffer { nullptr };
@@ -38,11 +37,8 @@ class DemoApplication : public GlfwApplication
 {
 public:
     DemoApplication();
-
     void exec() override;
-
 private:
-
     std::vector<Entity> m_entities;
     Light m_light;
     std::shared_ptr<BasicShapes> m_basicShapes;

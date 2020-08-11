@@ -318,7 +318,6 @@ void DemoApplication::exec()
 
         previousTime = currentTime;
         float deltaTime = (float) elapsed.count() / 1000.0f;
-        // std::cout << deltaTime << std::endl;
         m_window->simpleUpdate();
         float f = 0.0f;
         mouse->update();
