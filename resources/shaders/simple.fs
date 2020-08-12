@@ -15,6 +15,7 @@ struct Material
     float roughness;
     float specular;
     float metallic;
+    float ao;
 };
 
 out vec4 FragColor;
@@ -100,7 +101,10 @@ void main() {
 
 
     vec3 lo = (kd * material.color.rgb / PI + specular) * radiance * cosTi;
-    vec3 ambient = vec3(0.8) * material.color.rgb * light.ambient;
+    vec3 ambient = material.color.rgb * light.ambient * material.ao;
     vec3 color = ambient + lo;
+
+    //color = color / (color + vec3(1.0));
+    color = color = pow(color, vec3(1.0 / 2.2));
     FragColor = vec4(color, 1.0);
 }

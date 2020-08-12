@@ -23,6 +23,13 @@ Mesh processMesh(aiMesh *aMesh, aiScene const *scene)
         auto norm = aMesh->mNormals[i];
 
         Vertex vertex({ pos.x, pos.y, pos.z }, { norm.x, norm.y, norm.z });
+
+        auto textureCoords = aMesh->mTextureCoords[0];
+        if (aMesh->mTextureCoords[0])
+        {
+            auto texCoords = textureCoords[i];
+            vertex.uv = glm::vec2(texCoords.x, texCoords.y);
+        }
         mesh.vertices.push_back(vertex);
     }
 
