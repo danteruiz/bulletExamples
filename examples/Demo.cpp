@@ -29,13 +29,21 @@
 #include "DebugUI.h"
 #include "Helper.h"
 
+#ifdef __APPLE__
+static std::string shaderPath("/Users/danteruiz/code/rendering-examples/resources/shaders/");
+#else
 static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
+#endif
+
 static const std::string vertexShader = shaderPath + "simple.vs";
 static const std::string fragmentShader = shaderPath + "simple.fs";
 static const std::string debugFragmentShader = shaderPath + "debug.fs";
 static const std::string debugVertexShader = shaderPath + "debug.vs";
-
+#ifdef __APPLE__
+static std::string const suzanne("/Users/danteruiz/code/rendering-examples/resources/models/Suzanne.obj");
+#else
 static std::string const suzanne("C:/Users/dante/code/rendering-examples/resources/models/Suzanne.obj");
+#endif
 
 static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
 static glm::vec3 const UNIT_X(1.0f, 0.0f, 0.0f);

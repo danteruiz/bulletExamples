@@ -6,7 +6,12 @@
 #include "Buffer.h"
 #include "Shader.h"
 
+#ifdef __APPLE__
+static std::string shaderPath("/Users/danteruiz/code/rendering-examples/resources/shaders/");
+#else
 static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
+#endif
+
 static const std::string vertexShader = shaderPath + "simple.vs";
 static const std::string fragmentShader = shaderPath + "simple.fs";
 

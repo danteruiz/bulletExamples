@@ -8,10 +8,10 @@ conan_add_remote(NAME bincrafters INDEX 1
 conan_cmake_run(CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS
   BUILD missing)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED_ON)
 if (UNIX)
-  add_compile_options(-W -Wall -Wextra -Wpedantic -Werror -std=c++2a)
+  add_compile_options(-W -Wall -Wextra -Wpedantic -fvisibility=hidden -std=c++17)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")

@@ -26,13 +26,15 @@ GlfwApplication::GlfwApplication() {
         std::cout << "!!!! ERROR: INSTANCE ALREADY EXISTS" << std::endl;
     }
 
+    std::cout << "this is a test" << std::endl;
     g_application = this;
     m_string = "This is not a test";
 
 
     m_window = std::make_shared<Window>(1800, 1200, "Demo");
-    m_window->createWindow();
-
+    if (!m_window->createWindow()) {
+        std::cout << "window faied to be created" << std::endl;
+    }
 
     glfwSetWindowSizeCallback(m_window->getWindowPtr(), onWindowSizeChanged);
 }

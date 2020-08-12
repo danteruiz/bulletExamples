@@ -4,7 +4,7 @@ file(GLOB source_files "*.h" "*.cpp")
 if (MSVC)
   add_executable(${PROJECT_NAME} ${source_files})
 else()
-  add_executable(${PROJECT_NAME} main.cpp)
+  add_executable(${PROJECT_NAME} ${source_files})
 endif()
 
 link_personal_libraries(render input core ui)
