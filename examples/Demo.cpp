@@ -280,6 +280,7 @@ void renderEntities(RenderArgs const &renderArgs)
         shader->setUniform1f("material.specular", entity.specular);
         shader->setUniform1f("material.roughness", entity.roughness);
         shader->setUniform1f("material.metallic", entity.metallic);
+        shader->setUniform1f("material.ao", entity.ao);
 
         for (auto mesh: geometry->meshes)
         {
@@ -312,6 +313,7 @@ std::vector<Marker> getMarkers(RenderArgs const &renderArgs) {
 
     return markers;
 }
+
 void DemoApplication::exec()
 {
     auto currentTime = std::chrono::steady_clock::now();

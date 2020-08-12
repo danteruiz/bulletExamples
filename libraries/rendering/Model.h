@@ -11,10 +11,12 @@ class Shader;
 
 struct Vertex
 {
-    Vertex(glm::vec3 p, glm::vec3 n) : position(p), normal(n) {}
     Vertex(glm::vec3 p) : position(p) {}
+    Vertex(glm::vec3 p, glm::vec3 n) : position(p), normal(n) {}
+    Vertex(glm::vec3 p, glm::vec3 n, glm::vec2 u) : position(p), normal(n), uv(u) {}
     glm::vec3 position;
     glm::vec3 normal { 0.0f, 1.0f, 0.0f };
+    glm::vec2 uv { 0.0f, 0.0f };
 };
 
 

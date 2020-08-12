@@ -72,6 +72,7 @@ void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<vo
     ImGui::SliderFloat("specular", &entity.specular, 0.0f, 1.0f);
     ImGui::SliderFloat("roughness", &entity.roughness, 0.0f, 1.0f);
     ImGui::SliderFloat("metallic", &entity.metallic, 0.0f, 1.0f);
+    ImGui::SliderFloat("ao", &entity.ao, 0.0f, 1.0f);
     ImGui::End();
 };
 

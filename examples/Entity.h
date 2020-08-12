@@ -29,6 +29,7 @@ struct Entity
     float specular { 1.0f };
     float metallic { 1.0f };
     float roughness { 1.0f };
+    float ao { 1.0f };
     std::shared_ptr<Geometry> geometry { nullptr };
 };
 
