@@ -18,6 +18,13 @@ void Buffer::unbind() const
     glBindBuffer(m_type, 0);
 }
 
+
+void Buffer::applyLayout() const
+{
+    for (auto element : m_layout) {
+    }
+}
+
 void Buffer::setAttri(unsigned int slot, unsigned int size, unsigned int stride, unsigned int s)
 {
     glVertexAttribPointer(slot, size, GL_FLOAT, GL_FALSE, stride, (void*)s);

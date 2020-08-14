@@ -1,4 +1,5 @@
 #pragma once
+#include "Buffer.h"
 
 #include <vector>
 #include <string>
@@ -6,17 +7,14 @@
 
 #include <glm/glm.hpp>
 
-class Buffer;
-class Shader;
-
 struct Vertex
 {
     Vertex(glm::vec3 p) : position(p) {}
     Vertex(glm::vec3 p, glm::vec3 n) : position(p), normal(n) {}
-    Vertex(glm::vec3 p, glm::vec3 n, glm::vec2 u) : position(p), normal(n), uv(u) {}
+    Vertex(glm::vec3 p, glm::vec3 n, glm::vec2 uv) : position(p), normal(n), texCoord(uv) {}
     glm::vec3 position;
     glm::vec3 normal { 0.0f, 1.0f, 0.0f };
-    glm::vec2 uv { 0.0f, 0.0f };
+    glm::vec2 texCoord { 0.0f, 0.0f };
 };
 
 
@@ -24,17 +22,18 @@ struct Mesh
 {
     std::vector<Vertex> vertices;
     std::vector<int> indices;
-    std::shared_ptr<Buffer> vertexBuffer;
-    std::shared_ptr<Buffer> indexBuffer;
+    Buffer::Pointer vertexBuffer;
+    Buffer::Pointer indexBuffer;
+    Material::Pointer material { nullptr };
 };
 
 
 
-struct Geometry
+struct Model
 {
+    using Pointer = std::shared_ptr<Model>;
     std::vector<Mesh> meshes;
-    std::shared_ptr<Shader> shader;
 };
 
 
-std::shared_ptr<Geometry> loadModel(std::string const &file);
+Model::Pointer loadModel(std::string const &file);

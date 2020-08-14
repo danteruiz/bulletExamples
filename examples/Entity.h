@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <Material.h>
 
 
 struct Geometry;
@@ -25,12 +26,8 @@ struct Entity
     glm::vec3 scale { 1.0f, 1.0f, 1.0f };
     glm::quat rotation { 1.0f, 0.0f, 0.0f, 0.0f };
 
-    glm::vec4 color  { 1.0f, 1.0f, 1.0f, 1.0f };
-    float specular { 1.0f };
-    float metallic { 1.0f };
-    float roughness { 1.0f };
-    float ao { 1.0f };
-    std::shared_ptr<Geometry> geometry { nullptr };
+    Material::Pointer material { nullptr };
+    Model { nullptr };
 };
 
 

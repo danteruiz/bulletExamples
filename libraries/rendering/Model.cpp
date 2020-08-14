@@ -9,10 +9,6 @@
 
 #include <iostream>
 
-static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
-static const std::string vertexShader = shaderPath + "simple.vs";
-static const std::string fragmentShader = shaderPath + "simple.fs";
-
 Mesh processMesh(aiMesh *aMesh, aiScene const *scene)
 {
     Mesh mesh;
@@ -66,12 +62,12 @@ void processNode(aiNode *node, aiScene const *scene, std::shared_ptr<Geometry> &
 }
 
 
-std::shared_ptr<Geometry> loadModel(std::string const &file)
+Model::Pointer loadModel(std::string const &file)
 {
     Assimp::Importer importer;
     aiScene const *scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-    std::shared_ptr<Geometry> geometry = std::make_shared<Geometry>();
+    Modeel::Pointer geometry = std::make_shared<Model>();
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         std::cout << "Failed loading model" << std::endl;
@@ -83,6 +79,5 @@ std::shared_ptr<Geometry> loadModel(std::string const &file)
 
     std::cout << "Finished Load Model: " << file << std::endl;
 
-    geometry->shader = std::make_shared<Shader>(fragmentShader, vertexShader);
     return geometry;
 }

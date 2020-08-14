@@ -1,11 +1,12 @@
 #pragma once
 
-
 #include <gl/glew.h>
+#include <memory>
+
 class Buffer
 {
 public:
-
+    using Pointer = std::shared_ptr<Buffer>;
     enum Type
     {
         ARRAY = GL_ARRAY_BUFFER,
@@ -17,6 +18,7 @@ public:
 
     void bind() const;
     void unbind() const;
+    void applyLayout() const;
     void setAttri(unsigned int slot, unsigned int size, unsigned int stride, unsigned int s = 0);
     unsigned int getID() { return m_id; }
 private:

@@ -3,8 +3,7 @@
 #include <array>
 #include <memory>
 
-
-struct Geometry;
+#include "Model.h"
 class BasicShapes
 {
 public:
@@ -18,7 +17,7 @@ public:
 
     BasicShapes();
 
-    std::shared_ptr<Geometry> getShape(int type);
+    Model::Pointer getShape(int type);
 private:
-    std::array<std::shared_ptr<Geometry>, NUM_SHAPES> m_shapes;
+    std::array<Model::Pointer, NUM_SHAPES> m_shapes;
 };

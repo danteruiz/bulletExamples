@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,6 +9,7 @@
 class Shader
 {
 public:
+    using Pointer = std::shared_ptr<Shader>;
     Shader(std::string const &fragmentSource, std::string const &vertexSource);
     int getID() const { return m_id; }
 

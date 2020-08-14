@@ -3,23 +3,13 @@
 #include <cmath>
 #include <iostream>
 #include "Model.h"
-#include "Buffer.h"
 #include "Shader.h"
-
-#ifdef __APPLE__
-static std::string shaderPath("/Users/danteruiz/code/rendering-examples/resources/shaders/");
-#else
-static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
-#endif
-
-static const std::string vertexShader = shaderPath + "simple.vs";
-static const std::string fragmentShader = shaderPath + "simple.fs";
 
 static float const  PI = 3.14159265359;
 
 static int const X_SEGMENTS = 256.0f;
 static int const Y_SEGMENTS = 256.0f;
-std::shared_ptr<Geometry> buildSphere()
+Model::Pointer buildSphere()
 {
     Mesh mesh;
 
@@ -64,20 +54,19 @@ std::shared_ptr<Geometry> buildSphere()
 
 
 
-    std::shared_ptr<Geometry> geometry = std::make_shared<Geometry>();
+    Model::Pointer geometry = std::make_shared<Model>();
 
     mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
     mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
 
     geometry->meshes.push_back(mesh);
-    geometry->shader = std::make_shared<Shader>(fragmentShader, vertexShader);
     return geometry;
 }
 
 
-std::shared_ptr<Geometry> buildTriangle()
+Model::Pointer buildTriangle()
 {
-    std::shared_ptr<Geometry> geometry = std::make_shared<Geometry>();
+    Model::Pointer geometry = std::make_shared<Model>();
 
     Mesh mesh;
     mesh.vertices = {
@@ -101,15 +90,14 @@ std::shared_ptr<Geometry> buildTriangle()
     mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
 
     geometry->meshes.push_back(mesh);
-    geometry->shader = std::make_shared<Shader>(fragmentShader, vertexShader);
 
     return geometry;
 }
 
 
-std::shared_ptr<Geometry> buildCube()
+Model::Pointer buildCube()
 {
-    std::shared_ptr<Geometry> geometry = std::make_shared<Geometry>();
+    Model::Pointer geometry = std::make_shared<Model>();
 
 
     Mesh mesh;
@@ -177,7 +165,6 @@ std::shared_ptr<Geometry> buildCube()
     mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
 
     geometry->meshes.push_back(mesh);
-    geometry->shader = std::make_shared<Shader>(fragmentShader, vertexShader);
 
     return geometry;
 }
@@ -191,7 +178,7 @@ BasicShapes::BasicShapes()
 
 
 
-std::shared_ptr<Geometry> BasicShapes::getShape(int type)
+Model::Pointer BasicShapes::getShape(int type)
 {
     return m_shapes[type];
 }
