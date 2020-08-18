@@ -1,5 +1,7 @@
 #include "Buffer.h"
 
+#include "Layout.h"
+
 
 Buffer::Buffer(Buffer::Type type, size_t size, size_t count, void* data) : m_type(type), m_size(size), m_count(count)
 {
@@ -18,15 +20,12 @@ void Buffer::unbind() const
     glBindBuffer(m_type, 0);
 }
 
-
 void Buffer::applyLayout() const
 {
     for (auto element : m_layout) {
     }
 }
 
-void Buffer::setAttri(unsigned int slot, unsigned int size, unsigned int stride, unsigned int s)
-{
-    glVertexAttribPointer(slot, size, GL_FLOAT, GL_FALSE, stride, (void*)s);
-    glEnableVertexAttribArray(slot);
-}
+void Buffer::setLayout(std::shared_ptr<Layout> layout) { m_layout = layout; }
+
+std::shared_ptr<Layout> Buffer::getLayout() const { return m_layout; }

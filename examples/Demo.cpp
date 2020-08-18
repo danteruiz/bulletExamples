@@ -286,8 +286,7 @@ void renderEntities(RenderArgs const &renderArgs)
         {
             auto vertexBuffer = mesh.vertexBuffer;
             vertexBuffer->bind();
-            vertexBuffer->setAttri(0, 3, sizeof(Vertex));
-            vertexBuffer->setAttri(1, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
+            verteBuffer->getLayout()->enableAttributes();
 
             mesh.indexBuffer->bind();
             glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);

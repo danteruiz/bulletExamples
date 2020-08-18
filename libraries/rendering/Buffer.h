@@ -3,6 +3,8 @@
 #include <gl/glew.h>
 #include <memory>
 
+
+class Layout;
 class Buffer
 {
 public:
@@ -15,15 +17,15 @@ public:
 
     Buffer(Buffer::Type type, size_t size, size_t count, void *data);
 
-
     void bind() const;
     void unbind() const;
-    void applyLayout() const;
-    void setAttri(unsigned int slot, unsigned int size, unsigned int stride, unsigned int s = 0);
+    void setLayout(Layout::Pointer layout);
+    std::shared_ptr<Layout>  getLayout() const;
     unsigned int getID() { return m_id; }
 private:
     unsigned int m_id { 0 };
     size_t m_size { 0 };
     size_t m_count { 0 };
     Buffer::Type m_type;
+    std::shared_ptr<Layout> m_layout;
 };
