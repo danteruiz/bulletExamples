@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 enum Slots
 {
@@ -7,7 +8,7 @@ enum Slots
     TEXTCOORD
 };
 
-struct Attriute
+struct Attribute
 {
     Attribute(unsigned int _slot, unsigned int _count, unsigned  int _stride, unsigned int _offset)
         : slot(_slot), count(_count), stride(_stride), offset(_offset) {}

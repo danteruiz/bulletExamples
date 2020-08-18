@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <memory>
+
 struct Texture
 {
     std::string source;
@@ -10,10 +12,4 @@ struct Texture
     unsigned char* data { nullptr };
 };
 
-
-
-
-unsigned int loadTexture(std::string file);
-struct TextureHandle {
-    unsigned int id;
-};
+std::shared_ptr<Texture> loadTexture(std::string file);

@@ -7,11 +7,11 @@
 
 #include <gl/glew.h>
 
-unsigned int loadTexture(std::string file)
+std::shared_ptr<Texture> loadTexture(std::string file)
 {
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    std::shared_ptr<Texture> texture = std::make_shared<Texture>();
+    glGenTextures(1, &texture->id);
+    glBindTexture(GL_TEXTURE_2D, texture->id);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

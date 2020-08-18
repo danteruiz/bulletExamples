@@ -1,6 +1,6 @@
 #include "Buffer.h"
 
-#include "Layout.h"
+#include "Format.h"
 
 
 Buffer::Buffer(Buffer::Type type, size_t size, size_t count, void* data) : m_type(type), m_size(size), m_count(count)
@@ -18,12 +18,6 @@ void Buffer::bind() const
 void Buffer::unbind() const
 {
     glBindBuffer(m_type, 0);
-}
-
-void Buffer::applyLayout() const
-{
-    for (auto element : m_layout) {
-    }
 }
 
 void Buffer::setLayout(std::shared_ptr<Layout> layout) { m_layout = layout; }

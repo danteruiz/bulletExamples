@@ -2,6 +2,8 @@
 
 #include "Buffer.h"
 #include "Shader.h"
+#include "Material.h"
+#include "Format.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -24,7 +26,7 @@ Mesh processMesh(aiMesh *aMesh, aiScene const *scene)
         if (aMesh->mTextureCoords[0])
         {
             auto texCoords = textureCoords[i];
-            vertex.uv = glm::vec2(texCoords.x, texCoords.y);
+            vertex.texCoord = glm::vec2(texCoords.x, texCoords.y);
         }
         mesh.vertices.push_back(vertex);
     }
@@ -39,14 +41,24 @@ Mesh processMesh(aiMesh *aMesh, aiScene const *scene)
         }
     }
 
+    if (mMesh->mMaterialIndex >= 0)
+    {
+        // process material
+    }
+
+    std::cout << "MaterialIndex: " << aMesh->mMaterialIndex << std::endl;
+    std::shared_ptr<Layout> layout = std::make_shared<Layout>();
+    layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
+    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
     mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
+    mesh.vertexBuffer->setLayout(layout);
     mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
 
     return mesh;
 }
 
 
-void processNode(aiNode *node, aiScene const *scene, std::shared_ptr<Geometry> &model)
+void processNode(aiNode *node, aiScene const *scene, std::shared_ptr<Model> &model)
 {
     for (unsigned int i = 0; i < node->mNumMeshes; ++i)
     {
@@ -67,7 +79,7 @@ Model::Pointer loadModel(std::string const &file)
     Assimp::Importer importer;
     aiScene const *scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-    Modeel::Pointer geometry = std::make_shared<Model>();
+    Model::Pointer geometry = std::make_shared<Model>();
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         std::cout << "Failed loading model" << std::endl;

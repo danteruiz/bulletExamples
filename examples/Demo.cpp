@@ -23,6 +23,7 @@
 #include <GL/glew.h>
 #include <BasicShapes.h>
 #include <Model.h>
+#include <Format.h>
 
 #include <imgui/Imgui.h>
 
@@ -42,7 +43,7 @@ static const std::string debugVertexShader = shaderPath + "debug.vs";
 #ifdef __APPLE__
 static std::string const suzanne("/Users/danteruiz/code/rendering-examples/resources/models/Suzanne.obj");
 #else
-static std::string const suzanne("C:/Users/dante/code/rendering-examples/resources/models/Suzanne.obj");
+static std::string const suzanne("C:/Users/dante/code/rendering-examples/resources/models/oildrum/Oil Drum.obj");
 #endif
 
 static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
@@ -169,15 +170,18 @@ DebugDraw::DebugDraw()
         MarkerVertex(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 1.0f))
     };
 
+    std::shared_ptr<Layout> layout = std::make_shared<Layout>();
+    layout->setAttribute(0, 3, sizeof(MarkerVertex), 0);
+    layout->setAttribute(1, 3, sizeof(MarkerVertex), (unsigned int) offsetof(MarkerVertex, color));
     m_vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, positions.size() * sizeof(MarkerVertex), positions.size(), positions.data());
+    m_vertexBuffer->setLayout(layout);
     m_debugPipeline = std::make_shared<Shader>(debugFragmentShader, debugVertexShader);
 }
 
 void DebugDraw::renderMarkers(std::vector<Marker> const  &markers, glm::mat4 const &view, glm::mat4 const &projection) {
 
     m_vertexBuffer->bind();
-    m_vertexBuffer->setAttri(0, 3, sizeof(MarkerVertex));
-    m_vertexBuffer->setAttri(1, 3, sizeof(MarkerVertex), (unsigned int) offsetof(MarkerVertex, color));
+    m_vertexBuffer->getLayout()->enableAttributes();
     m_debugPipeline->bind();
     m_debugPipeline->setUniformMat4("view", view);
     m_debugPipeline->setUniformMat4("projection", projection);
@@ -215,21 +219,25 @@ DemoApplication::DemoApplication()
     Entity floorEntity;
     Entity sphereEntity;
     Entity suzanneEntity;
-    cubeEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
-    floorEntity.geometry = m_basicShapes->getShape(BasicShapes::CUBE);
-    sphereEntity.geometry = m_basicShapes->getShape(BasicShapes::SPHERE);
-    suzanneEntity.geometry = loadModel(suzanne);
+    cubeEntity.model = m_basicShapes->getShape(BasicShapes::CUBE);
+    floorEntity.model = m_basicShapes->getShape(BasicShapes::CUBE);
+    sphereEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
+    suzanneEntity.model = loadModel(suzanne);
 
+    cubeEntity.material = std::make_shared<Material>();
+    floorEntity.material = std::make_shared<Material>();
+    sphereEntity.material = std::make_shared<Material>();
+    suzanneEntity.material = std::make_shared<Material>();
 
     cubeEntity.name = "cube";
     sphereEntity.name = "sphere";
     floorEntity.name = "floor";
     suzanneEntity.name = "suzanne";
-    cubeEntity.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    sphereEntity.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    suzanneEntity.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    cubeEntity.material->albedo = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    sphereEntity.material->albedo = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    suzanneEntity.material->albedo = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
-    floorEntity.color = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);
+    floorEntity.material->albedo = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);
     floorEntity.translation = glm::vec3(0.0f, -4.0f, 1.0f);
     floorEntity.scale = glm::vec3(30.0f, 0.1f, 30.0f);
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
@@ -266,27 +274,27 @@ void renderEntities(RenderArgs const &renderArgs)
     auto shader = renderArgs.shader;
     for (auto entity: renderArgs.entities)
     {
-        auto geometry = entity.geometry;
+        auto geometry = entity.model;
+        auto material = entity.material;
         shader->bind();
         shader->setUniformMat4("model", getMatrix(entity));
         shader->setUniformMat4("projection", renderArgs.projection);
         shader->setUniformMat4("view", renderArgs.view);
-        shader->setUniformVec4("material.color", entity.color);
         shader->setUniform1f("light.intensity", renderArgs.light.intensity);
         shader->setUniform1f("light.ambient", renderArgs.light.ambient);
         shader->setUniformVec3("light.color", renderArgs.light.color);
         shader->setUniformVec3("light.position", renderArgs.light.position);
         shader->setUniformVec3("cameraPosition", camera.position);
-        shader->setUniform1f("material.specular", entity.specular);
-        shader->setUniform1f("material.roughness", entity.roughness);
-        shader->setUniform1f("material.metallic", entity.metallic);
-        shader->setUniform1f("material.ao", entity.ao);
+        shader->setUniformVec3("material.color", material->albedo);
+        shader->setUniform1f("material.roughness", material->roughness);
+        shader->setUniform1f("material.metallic", material->metallic);
+        shader->setUniform1f("material.ao", material->ao);
 
         for (auto mesh: geometry->meshes)
         {
             auto vertexBuffer = mesh.vertexBuffer;
             vertexBuffer->bind();
-            verteBuffer->getLayout()->enableAttributes();
+            vertexBuffer->getLayout()->enableAttributes();
 
             mesh.indexBuffer->bind();
             glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);

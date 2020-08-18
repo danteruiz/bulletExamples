@@ -11,7 +11,7 @@ struct Light
 
 struct Material
 {
-    vec4 color;
+    vec3 color;
     float roughness;
     float specular;
     float metallic;

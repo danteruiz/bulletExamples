@@ -2,9 +2,11 @@
 
 #include "Entity.h"
 #include "Helper.h"
+
 #include <imgui/Imgui.h>
 #include <imgui.h>
 #include <Window.h>
+#include <Material.h>
 
 DebugUI::DebugUI(std::shared_ptr<Window> const &window)
 {
@@ -62,17 +64,17 @@ void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<vo
     ImGui::Text("Edit Entity");
 
     Entity &entity = entities[m_entityIndex];
-    float entityColor[4] = { entity.color.x, entity.color.y, entity.color.z, entity.color.w};
-    ImGui::ColorEdit4("entity color", entityColor);
-    entity.color.x = entityColor[0];
-    entity.color.y = entityColor[1];
-    entity.color.z = entityColor[2];
-    entity.color.w = entityColor[3];
+    auto &material = entity.material;
+    auto color = material->albedo;
+    float entityColor[3] = { color.x, color.y, color.z};
+    ImGui::ColorEdit3("entity color", entityColor);
+    material->albedo.x = entityColor[0];
+    material->albedo.y = entityColor[1];
+    material->albedo.z = entityColor[2];
 
-    ImGui::SliderFloat("specular", &entity.specular, 0.0f, 1.0f);
-    ImGui::SliderFloat("roughness", &entity.roughness, 0.0f, 1.0f);
-    ImGui::SliderFloat("metallic", &entity.metallic, 0.0f, 1.0f);
-    ImGui::SliderFloat("ao", &entity.ao, 0.0f, 1.0f);
+    ImGui::SliderFloat("roughness", &material->roughness, 0.0f, 1.0f);
+    ImGui::SliderFloat("metallic", &material->metallic, 0.0f, 1.0f);
+    ImGui::SliderFloat("ao", &material->ao, 0.0f, 1.0f);
     ImGui::End();
 };
 

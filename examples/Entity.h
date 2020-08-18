@@ -8,7 +8,8 @@
 #include <Material.h>
 
 
-struct Geometry;
+struct Model;
+struct Material;
 
 struct Transform
 {
@@ -26,8 +27,8 @@ struct Entity
     glm::vec3 scale { 1.0f, 1.0f, 1.0f };
     glm::quat rotation { 1.0f, 0.0f, 0.0f, 0.0f };
 
-    Material::Pointer material { nullptr };
-    Model { nullptr };
+    std::shared_ptr<Material> material { nullptr };
+    std::shared_ptr<Model> model { nullptr };
 };
 
 

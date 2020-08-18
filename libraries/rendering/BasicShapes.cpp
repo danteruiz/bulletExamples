@@ -58,7 +58,7 @@ Model::Pointer buildSphere()
     Model::Pointer geometry = std::make_shared<Model>();
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
-    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offset(Vertex, normal));
+    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
 
     mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
     mesh.vertexBuffer->setLayout(layout);
@@ -93,7 +93,8 @@ Model::Pointer buildTriangle()
 
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
-    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offset(Vertex, normal));
+    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
+
     mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
     mesh.vertexBuffer->setLayout(layout);
     mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
@@ -173,8 +174,10 @@ Model::Pointer buildCube()
 
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
-    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offset(Vertex, normal));
+    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
+
     mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
+    mesh.vertexBuffer->setLayout(layout);
     mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
 
     geometry->meshes.push_back(mesh);

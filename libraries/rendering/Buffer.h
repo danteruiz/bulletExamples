@@ -19,7 +19,7 @@ public:
 
     void bind() const;
     void unbind() const;
-    void setLayout(Layout::Pointer layout);
+    void setLayout(std::shared_ptr<Layout> layout);
     std::shared_ptr<Layout>  getLayout() const;
     unsigned int getID() { return m_id; }
 private:

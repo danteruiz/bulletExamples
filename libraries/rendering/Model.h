@@ -7,6 +7,8 @@
 
 #include <glm/glm.hpp>
 
+
+struct Material;
 struct Vertex
 {
     Vertex(glm::vec3 p) : position(p) {}
@@ -24,7 +26,7 @@ struct Mesh
     std::vector<int> indices;
     Buffer::Pointer vertexBuffer;
     Buffer::Pointer indexBuffer;
-    Material::Pointer material { nullptr };
+    std::shared_ptr<Material>  material { nullptr };
 };
 
 
