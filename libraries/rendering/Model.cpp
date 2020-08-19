@@ -41,8 +41,13 @@ Mesh processMesh(aiMesh *aMesh, aiScene const *scene)
         }
     }
 
-    if (mMesh->mMaterialIndex >= 0)
+    if (aMesh->mMaterialIndex >= 0)
     {
+        aiMaterial* material = scene->mMaterials[aMesh->mMaterialIndex];
+        for (unsigned int index = 0; index < material->GetTextureCount(aiTextureType_NORMALS); ++index)
+        {
+            std::cout << "Texture index: " << index << std::endl;
+        }
         // process material
     }
 

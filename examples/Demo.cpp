@@ -41,9 +41,9 @@ static const std::string fragmentShader = shaderPath + "simple.fs";
 static const std::string debugFragmentShader = shaderPath + "debug.fs";
 static const std::string debugVertexShader = shaderPath + "debug.vs";
 #ifdef __APPLE__
-static std::string const suzanne("/Users/danteruiz/code/rendering-examples/resources/models/Suzanne.obj");
+static std::string const suzanne("/Users/danteruiz/code/hifi/interface/resources/meshes/mannequin/man_stolen.fbx");
 #else
-static std::string const suzanne("C:/Users/dante/code/rendering-examples/resources/models/oildrum/Oil Drum.obj");
+static std::string const suzanne("C:/Users/dante/code/rendering-examples/resources/models/scifi-helmet/source/HEML1.fbx");
 #endif
 
 static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
