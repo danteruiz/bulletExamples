@@ -12,4 +12,4 @@ struct Texture
     unsigned char* data { nullptr };
 };
 
-std::shared_ptr<Texture> loadTexture(std::string file);
+std::shared_ptr<Texture> loadTexture(std::string path);

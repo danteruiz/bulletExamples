@@ -4,12 +4,33 @@
 #include "Shader.h"
 #include "Material.h"
 #include "Format.h"
+#include "Texture.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include <iostream>
+#include <vector>
+#include <string>
+
+std::vector<std::shared_ptr<Texture>> loadMaterialTexture(aiMaterial* mat, aiTextureType type, std::string textureType)
+{
+    std::vector<std::shared_ptr<Texture>> textures;
+
+    for (unsigned int index = 0; index < mat->GetTextureCount(type); ++index)
+    {
+        aiString str;
+        mat->GetTexture(type, index, &str);
+        std::string path = std::string(str.C_Str());
+        auto texture = loadTexture(path);
+        std::cout << path << std::endl;
+        textures.push_back(texture);
+    }
+
+
+    return textures;
+}
 
 Mesh processMesh(aiMesh *aMesh, aiScene const *scene)
 {
@@ -43,12 +64,11 @@ Mesh processMesh(aiMesh *aMesh, aiScene const *scene)
 
     if (aMesh->mMaterialIndex >= 0)
     {
+
+
+        std::cout << "Material Index: " << aMesh->mMaterialIndex << std::endl;
         aiMaterial* material = scene->mMaterials[aMesh->mMaterialIndex];
-        for (unsigned int index = 0; index < material->GetTextureCount(aiTextureType_NORMALS); ++index)
-        {
-            std::cout << "Texture index: " << index << std::endl;
-        }
-        // process material
+        loadMaterialTexture(material, aiTextureType_DIFFUSE, "Diffuse");
     }
 
     std::cout << "MaterialIndex: " << aMesh->mMaterialIndex << std::endl;
