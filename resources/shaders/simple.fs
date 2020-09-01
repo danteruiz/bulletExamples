@@ -9,6 +9,13 @@ struct Light
 };
 
 
+
+uniform sampler2D albedoMap;
+uniform sampler2D normalMap;
+uniform sampler2D metallicMap;
+uniform sampler2D occlusionMap;
+uniform sampler2D emissiveMap;
+
 struct Material
 {
     vec3 color;
@@ -16,6 +23,11 @@ struct Material
     float specular;
     float metallic;
     float ao;
+    int normalTextureSet;
+    int albedoTextureSet;
+    int emissiveTextureSet;
+    int occlusionTextureSet;
+    int metallicTextureSet;
 };
 
 out vec4 FragColor;
@@ -27,6 +39,7 @@ uniform vec3 cameraPosition;
 
 in vec3 vNormal;
 in vec3 vPosition;
+in vec2 TexCoord;
 const float PI = 3.14159265359;
 float NDF(float cosTheta, float roughness)
 {
@@ -70,18 +83,7 @@ void main() {
 
     float distance = length(light.position - vPosition);
     float attenuation = 1.0;
-
-   /* vec3 kd = material.color.xyz;
-    vec3 ambient = light.ambient * kd;
-    vec3 ks = kd * material.specular;
-
-    vec3 el = (light.color * light.intensity) * attenuation;
-
-    //vec3 lo = (kd + el) * cosTi;
-
-    vec3 lo = (kd + ks * pow(cosTh, material.shininess)) * (el * cosTi);
-    FragColor = vec4(lo, 1.0);*/
-
+    
     vec3 n = vNormal;
     vec3 radiance = (light.color)  * attenuation;
     vec3 fo = vec3(0.04);

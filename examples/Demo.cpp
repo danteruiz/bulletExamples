@@ -43,7 +43,7 @@ static const std::string debugVertexShader = shaderPath + "debug.vs";
 #ifdef __APPLE__
 static std::string const suzanne("/Users/danteruiz/code/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf");
 #else
-static std::string const suzanne("C:/Users/dante/code/hifi-content/avatars/GrayFoxWithEyes/GrayFoxWithEyeys.fbx");
+static std::string const suzanne("C:/Users/dante/code/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf");
 #endif
 
 static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
@@ -270,28 +270,28 @@ struct RenderArgs
 
 void renderEntities(RenderArgs const &renderArgs)
 {
-
     auto shader = renderArgs.shader;
     for (auto entity: renderArgs.entities)
     {
         auto geometry = entity.model;
-        auto material = entity.material;
-        shader->bind();
-        shader->setUniformMat4("model", getMatrix(entity));
-        shader->setUniformMat4("projection", renderArgs.projection);
-        shader->setUniformMat4("view", renderArgs.view);
-        shader->setUniform1f("light.intensity", renderArgs.light.intensity);
-        shader->setUniform1f("light.ambient", renderArgs.light.ambient);
-        shader->setUniformVec3("light.color", renderArgs.light.color);
-        shader->setUniformVec3("light.position", renderArgs.light.position);
-        shader->setUniformVec3("cameraPosition", camera.position);
-        shader->setUniformVec3("material.color", material->albedo);
-        shader->setUniform1f("material.roughness", material->roughness);
-        shader->setUniform1f("material.metallic", material->metallic);
-        shader->setUniform1f("material.ao", material->ao);
-
         for (auto mesh: geometry->meshes)
         {
+
+            auto material = mesh.material ? mesh.material : entity.material;
+
+            shader->bind();
+            shader->setUniformMat4("model", getMatrix(entity));
+            shader->setUniformMat4("projection", renderArgs.projection);
+            shader->setUniformMat4("view", renderArgs.view);
+            shader->setUniform1f("light.intensity", renderArgs.light.intensity);
+            shader->setUniform1f("light.ambient", renderArgs.light.ambient);
+            shader->setUniformVec3("light.color", renderArgs.light.color);
+            shader->setUniformVec3("light.position", renderArgs.light.position);
+            shader->setUniformVec3("cameraPosition", camera.position);
+            shader->setUniformVec3("material.color", material->albedo);
+            shader->setUniform1f("material.roughness", material->roughness);
+            shader->setUniform1f("material.metallic", material->metallic);
+            shader->setUniform1f("material.ao", material->ao);
             auto vertexBuffer = mesh.vertexBuffer;
             vertexBuffer->bind();
             vertexBuffer->getLayout()->enableAttributes();
@@ -301,9 +301,6 @@ void renderEntities(RenderArgs const &renderArgs)
         }
     }
 }
-
-
-
 
 std::vector<Marker> getMarkers(RenderArgs const &renderArgs) {
     Marker light;

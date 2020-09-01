@@ -18,22 +18,18 @@
 #include <vector>
 #include <string>
 
-std::vector<std::shared_ptr<Texture>> loadMaterialTexture(aiMaterial* mat, aiTextureType type, std::string textureType)
+std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model  &model, int index)
 {
-    std::vector<std::shared_ptr<Texture>> textures;
-
-    for (unsigned int index = 0; index < mat->GetTextureCount(type); ++index)
+    if (index < 0)
     {
-        aiString str;
-        mat->GetTexture(type, index, &str);
-        std::string path = std::string(str.C_Str());
-        auto texture = loadTexture(path);
-        std::cout << path << std::endl;
-        textures.push_back(texture);
+        return nullptr;
     }
 
+    tinygltf::Texture const &gltfTexture = model.textures[index];
+    std::cout << "Creating Texuture: " << gltfTexture.name << std::endl;
+    tinygltf::Image &image = model.images[gltfTexture.source];
 
-    return textures;
+    return createTextureFromGLTF(image.width, image.height, image.component, image.bits, &image.image.at(0));
 }
 
 Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
@@ -62,9 +58,9 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         tinygltf::Buffer &normalBuffer = model.buffers[normalBufferView.buffer];
         tinygltf::Buffer &texCoordBuffer = model.buffers[texCoordBufferView.buffer];
 
-        const float* positionData = reinterpret_cast<float*> (&positionBuffer.data[positionBufferView.byteOffset + positionAccess.byteOffset]);
-        const float* normalData = reinterpret_cast<float*> (&normalBuffer.data[normalBufferView.byteOffset + normalAccess.byteOffset]);
-        const float* texCoordData = reinterpret_cast<float*> (&texCoordBuffer.data[texCoordBufferView.byteOffset + texCoordAccess.byteOffset]);
+        float* const positionData = reinterpret_cast<float*> (&positionBuffer.data[positionBufferView.byteOffset + positionAccess.byteOffset]);
+        float* const normalData = reinterpret_cast<float*> (&normalBuffer.data[normalBufferView.byteOffset + normalAccess.byteOffset]);
+        float* const texCoordData = reinterpret_cast<float*> (&texCoordBuffer.data[texCoordBufferView.byteOffset + texCoordAccess.byteOffset]);
 
 
         for (size_t i = 0; i < positionAccess.count; ++i)
@@ -92,6 +88,33 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         for (size_t i = 0; i < indexAccessor.count; ++i) {
             mesh.indices.push_back((int) indices[i]);
         }
+
+
+        // materials
+
+        std::shared_ptr<Material> material = std::make_shared<Material>();
+        tinygltf::Material const &gltfMaterial = model.materials[primitive.material];
+
+        std::cout << "Material name: " << gltfMaterial.name << std::endl;
+
+        auto pbrMaterial = gltfMaterial.pbrMetallicRoughness;
+        auto pbrBaseColor = pbrMaterial.baseColorFactor;
+        material->albedo = glm::vec3(pbrBaseColor[0], pbrBaseColor[1], pbrBaseColor[2]);
+        material->ao = (float) pbrBaseColor[3];
+        auto emissiveFactor = gltfMaterial.emissiveFactor;
+        material->emissive = glm::vec3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
+        material->roughness = (float) pbrMaterial.roughnessFactor;
+        material->metallic = (float) pbrMaterial.metallicFactor;
+        material->albedoTexture = loadMaterialTexture(model, pbrMaterial.baseColorTexture.index);
+        material->normalTexture = loadMaterialTexture(model, gltfMaterial.normalTexture.index);
+        material->emissiveTexture = loadMaterialTexture(model, gltfMaterial.emissiveTexture.index);
+        material->occlusionTexture = loadMaterialTexture(model, gltfMaterial.occlusionTexture.index);
+        material->metallicTexture = loadMaterialTexture(model, pbrMaterial.metallicRoughnessTexture.index);
+
+        std::cout << "material roughness: " << material->roughness << std::endl;
+        std::cout << "material metallic: " << material->metallic << std::endl;
+
+        mesh.material = material;
     }
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
