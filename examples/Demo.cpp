@@ -41,7 +41,7 @@ static const std::string fragmentShader = shaderPath + "simple.fs";
 static const std::string debugFragmentShader = shaderPath + "debug.fs";
 static const std::string debugVertexShader = shaderPath + "debug.vs";
 #ifdef __APPLE__
-static std::string const suzanne("/Users/danteruiz/code/hifi/interface/resources/meshes/mannequin/man_stolen.fbx");
+static std::string const suzanne("/Users/danteruiz/code/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf");
 #else
 static std::string const suzanne("C:/Users/dante/code/hifi-content/avatars/GrayFoxWithEyes/GrayFoxWithEyeys.fbx");
 #endif
