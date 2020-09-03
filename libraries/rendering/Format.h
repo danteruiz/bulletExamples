@@ -5,7 +5,7 @@ enum Slots
 {
     POSITION = 0,
     NORMAL,
-    TEXTCOORD
+    TEXCOORD
 };
 
 struct Attribute

@@ -24,6 +24,7 @@
 #include <BasicShapes.h>
 #include <Model.h>
 #include <Format.h>
+#include <Texture.h>
 
 #include <imgui/Imgui.h>
 
@@ -268,6 +269,15 @@ struct RenderArgs
     std::shared_ptr<Shader> shader;
 };
 
+
+void enableTexture(int slot, std::shared_ptr<Texture> const &texture)
+{
+    if (texture) {
+        glActiveTexture(GL_TEXTURE0 + slot);
+        glBindTexture(GL_TEXTURE_2D, texture->id);
+    }
+}
+
 void renderEntities(RenderArgs const &renderArgs)
 {
     auto shader = renderArgs.shader;
@@ -295,6 +305,12 @@ void renderEntities(RenderArgs const &renderArgs)
             auto vertexBuffer = mesh.vertexBuffer;
             vertexBuffer->bind();
             vertexBuffer->getLayout()->enableAttributes();
+
+            enableTexture(0, material->albedoTexture);
+            enableTexture(1, material->normalTexture);
+            enableTexture(2, material->metallicTexture);
+            //enableTexture(3, material->occlusionTexture);
+            //enableTexture(4, material->emissiveTexture);
 
             mesh.indexBuffer->bind();
             glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);

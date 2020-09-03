@@ -65,6 +65,9 @@ void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<vo
 
     Entity &entity = entities[m_entityIndex];
     auto &material = entity.material;
+    if (!material) {
+        return;
+    }
     auto color = material->albedo;
     float entityColor[3] = { color.x, color.y, color.z};
     ImGui::ColorEdit3("entity color", entityColor);

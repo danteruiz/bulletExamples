@@ -77,6 +77,9 @@ void main() {
     vec3 v = normalize(cameraPosition - vPosition);
     vec3 l = normalize(light.position - vPosition);
     vec3 h = normalize(v + l);
+    vec3 n = vNormal;
+
+    vec3 diffuseColor = texture(colorMap, TexCoord);
 
     float cosTh = max(dot(vNormal, h), 0.0);
     float cosTi = max(dot(vNormal, l), 0.0);
@@ -84,10 +87,11 @@ void main() {
     float distance = length(light.position - vPosition);
     float attenuation = 1.0;
     
-    vec3 n = vNormal;
     vec3 radiance = (light.color)  * attenuation;
     vec3 fo = vec3(0.04);
     fo = mix(fo, material.color.rgb, material.metallic);
+
+    
     float ndf = NDF(cosTh, material.roughness);
     float g = GSmith(n, v, l, material.roughness);
     vec3 fr = Fensel(clamp(dot(h,v), 0.0, 1.0), fo);
@@ -102,11 +106,12 @@ void main() {
     kd *= 1.0 - material.metallic;
 
 
-    vec3 lo = (kd * material.color.rgb / PI + specular) * radiance * cosTi;
-    vec3 ambient = material.color.rgb * light.ambient * material.ao;
+    vec3 colorr = texture(albedoMap, TexCoord).rgb *  material.color.rgb;
+    vec3 lo = (kd * colorr / PI + specular) * radiance * cosTi;
+    vec3 ambient = colorr * light.ambient * material.ao;
     vec3 color = ambient + lo;
 
     //color = color / (color + vec3(1.0));
-    color = color = pow(color, vec3(1.0 / 2.2));
+    //color = color = pow(color, vec3(1.0 / 2.2));
     FragColor = vec4(color, 1.0);
 }
