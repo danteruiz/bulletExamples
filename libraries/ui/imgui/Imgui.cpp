@@ -44,4 +44,11 @@ namespace imgui
     {
         return ImGui::ListBox(name.c_str(), index, vector_getter, static_cast<void*>(&items), (int) items.size());
     }
+
+
+    bool InputText(std::string label, std::string& buffer)
+    {
+        char* buf = buffer.data();
+        return ImGui::InputText(label.c_str(), buf, buffer.size());
+    }
 }

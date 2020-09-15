@@ -41,11 +41,6 @@ static const std::string vertexShader = shaderPath + "simple.vs";
 static const std::string fragmentShader = shaderPath + "simple.fs";
 static const std::string debugFragmentShader = shaderPath + "debug.fs";
 static const std::string debugVertexShader = shaderPath + "debug.vs";
-#ifdef __APPLE__
-static std::string const suzanne("/Users/danteruiz/code/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf");
-#else
-static std::string const suzanne("C:/Users/dante/code/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf");
-#endif
 
 static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
 static glm::vec3 const UNIT_X(1.0f, 0.0f, 0.0f);
@@ -223,7 +218,7 @@ DemoApplication::DemoApplication()
     cubeEntity.model = m_basicShapes->getShape(BasicShapes::CUBE);
     floorEntity.model = m_basicShapes->getShape(BasicShapes::CUBE);
     sphereEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
-    suzanneEntity.model = loadModel(suzanne);
+    suzanneEntity.model = loadModel(m_debugUI->getModelPath());
 
     cubeEntity.material = std::make_shared<Material>();
     floorEntity.material = std::make_shared<Material>();
@@ -366,9 +361,17 @@ void DemoApplication::exec()
         glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float) m_window->getWidth() / (float) m_window->getHeight(), 0.3f, 700.0f);
 
 
+        auto compileShader = [&] {
+            m_pipeline = std::make_shared<Shader> (fragmentShader, vertexShader);
+        };
+
+        auto loadNewModel = [&](std::string path) {
+            m_entities[1].model = loadModel(path);
+        };
+
         m_debugUI->show(m_entities, m_light, [&] {
             m_pipeline = std::make_shared<Shader> (fragmentShader, vertexShader);
-        });
+        }, loadNewModel);
         RenderArgs renderArgs;
         renderArgs.view = view;
         renderArgs.projection = projection;

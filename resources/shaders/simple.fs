@@ -64,12 +64,10 @@ float ShlickGGX(float NdotV, float roughness)
 float GSmith(float NdotL, float NdotV, float roughness)
 {
     float r = roughness * roughness;
-
     float attenuationL = 2.0 * NdotL / (NdotL + sqrt(r * r + (1.0 - r * r) * (NdotL * NdotL)));
 	float attenuationV = 2.0 * NdotV / (NdotV + sqrt(r * r + (1.0 - r * r) * (NdotV * NdotV)));
 	//return attenuationL * attenuationV;
     return (ShlickGGX(NdotL, roughness) * ShlickGGX(NdotV, roughness));
-
 }
 
 void main() {

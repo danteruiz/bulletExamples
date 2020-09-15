@@ -53,6 +53,7 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 
         tinygltf::BufferView const &positionBufferView = model.bufferViews[positionIndex];
         tinygltf::BufferView const &normalBufferView = model.bufferViews[normalIndex];
+        std::cout << "tex coorrd index: " << texCoordIndex << " : size : " << model.bufferViews.size() << std::endl;
         tinygltf::BufferView const &texCoordBufferView = model.bufferViews[texCoordIndex];
 
         const tinygltf::Accessor &positionAccess = model.accessors[positionIndex];

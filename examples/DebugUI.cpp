@@ -11,6 +11,13 @@
 DebugUI::DebugUI(std::shared_ptr<Window> const &window)
 {
     imgui::initialize(window->getWindowPtr());
+
+#ifdef __APPLE__
+    m_path = "/Users/danteruiz/code/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf";
+#else
+    m_path = "C:/Users/dante/code/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf";
+#endif
+    m_path.resize(3000);
 }
 
 
@@ -19,7 +26,7 @@ DebugUI::~DebugUI()
     imgui::uninitialize();
 }
 
-void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<void()> compileShader)
+void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<void()> compileShader, std::function<void(std::string)> loadNewModel)
 {
     m_lightColor[0] = light.color.x;
     m_lightColor[1] = light.color.y;
@@ -28,10 +35,13 @@ void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<vo
     m_focus = ImGui::GetIO().WantCaptureMouse;
     imgui::newFrame();
     ImGui::Begin("DebugUI");
-    if (ImGui::Button("Compile Shader"))
+    if (ImGui::Button("LoadModel"))
     {
-        compileShader();
+        loadNewModel(m_path);
     }
+
+    imgui::InputText("Enter Model Path", m_path);
+
     ImGui::Separator();
     ImGui::Text("Light");
     ImGui::Separator();
