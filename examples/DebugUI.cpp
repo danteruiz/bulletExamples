@@ -13,9 +13,9 @@ DebugUI::DebugUI(std::shared_ptr<Window> const &window)
     imgui::initialize(window->getWindowPtr());
 
 #ifdef __APPLE__
-    m_path = "/Users/danteruiz/code/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf";
+    m_path = "/Users/danteruiz/code/glTF-Sample-Models/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf";
 #else
-    m_path = "C:/Users/dante/code/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf";
+    m_path = "C:/Users/dante/code/glTF-Sample-Models/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf";
 #endif
     m_path.resize(3000);
 }

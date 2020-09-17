@@ -33,18 +33,34 @@
 
 #ifdef __APPLE__
 static std::string shaderPath("/Users/danteruiz/code/rendering-examples/resources/shaders/");
+static std::string imagePath("/Users/danteruiz/code/rendering-examples/resources/skybox/");
 #else
 static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
+static std::string imagePath("C:/Users/dante/code/rendering-examples/resources/skybox/");
 #endif
 
 static const std::string vertexShader = shaderPath + "simple.vs";
 static const std::string fragmentShader = shaderPath + "simple.fs";
 static const std::string debugFragmentShader = shaderPath + "debug.fs";
 static const std::string debugVertexShader = shaderPath + "debug.vs";
+static const std::string SKYBOX_FRAG = shaderPath + "skybox.fs";
+static const std::string SKYBOX_VERT = shaderPath + "skybox.vs";
 
 static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
 static glm::vec3 const UNIT_X(1.0f, 0.0f, 0.0f);
 static glm::vec3 const UNIT_Y(0.0f, 1.0f, 0.0f);
+
+
+
+std::array<std::string, 6> CUBE_MAP_IMAGES
+{
+    imagePath + "right.jpg",
+    imagePath + "left.jpg",
+    imagePath + "top.jpg",
+    imagePath + "bottom.jpg",
+    imagePath + "front.jpg",
+    imagePath + "back.jpg"
+};
 
 struct Camera
 {
@@ -231,15 +247,18 @@ DemoApplication::DemoApplication()
     suzanneEntity.name = "suzanne";
     cubeEntity.material->albedo = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
     sphereEntity.material->albedo = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    suzanneEntity.material->albedo = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
     floorEntity.material->albedo = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);
     floorEntity.translation = glm::vec3(0.0f, -4.0f, 1.0f);
     floorEntity.scale = glm::vec3(30.0f, 0.1f, 30.0f);
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
 
-    suzanneEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 0.0f, 180.0f)));
+    suzanneEntity.rotation = glm::quat(glm::radians(glm::vec3(0.0f, 180.0f, 0.0)));
 
+
+    m_skybox.texture = loadCubeMap(CUBE_MAP_IMAGES);
+    m_skybox.shader = std::make_shared<Shader>(SKYBOX_FRAG, SKYBOX_VERT);
+    m_skybox.model = m_basicShapes->getShape(BasicShapes::CUBE);
 
     m_light.position = glm::vec3(-1.6f, 8.0f, 0.0f);
     m_light.ambient = 0.05f;
@@ -250,7 +269,7 @@ DemoApplication::DemoApplication()
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
 
 
-    m_entities = { floorEntity, suzanneEntity };
+    m_entities = { suzanneEntity };
     m_pipeline = std::make_shared<Shader>(fragmentShader, vertexShader);
     m_debugDraw = std::make_shared<DebugDraw>();
 }
@@ -304,8 +323,8 @@ void renderEntities(RenderArgs const &renderArgs)
             enableTexture(0, material->albedoTexture);
             enableTexture(1, material->normalTexture);
             enableTexture(2, material->metallicTexture);
-            //enableTexture(3, material->occlusionTexture);
-            //enableTexture(4, material->emissiveTexture);
+            enableTexture(3, material->occlusionTexture);
+            enableTexture(4, material->emissiveTexture);
 
             mesh.indexBuffer->bind();
             glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -327,6 +346,27 @@ std::vector<Marker> getMarkers(RenderArgs const &renderArgs) {
     markers.push_back(light);
 
     return markers;
+}
+
+
+void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
+{
+    glDepthMask(GL_FALSE);
+    auto shader = skybox.shader;
+    shader->bind();
+    shader->setUniformMat4("projection", renderArgs.projection);
+    shader->setUniformMat4("view", glm::mat4(glm::mat3(renderArgs.view)));
+
+    auto mesh = skybox.model->meshes[0];
+    auto vertexBuffer = mesh.vertexBuffer;
+    vertexBuffer->bind();
+    vertexBuffer->getLayout()->enableAttributes();
+
+    enableTexture(0, skybox.texture);
+
+    mesh.indexBuffer->bind();
+    glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    glDepthMask(GL_TRUE);
 }
 
 void DemoApplication::exec()
@@ -379,8 +419,11 @@ void DemoApplication::exec()
         renderArgs.light = m_light;
         renderArgs.shader = m_pipeline;
 
+
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
+        drawSkybox(m_skybox, renderArgs);
         renderEntities(renderArgs);
         m_debugDraw->renderMarkers(getMarkers(renderArgs), view, projection);
         imgui::render();
