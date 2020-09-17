@@ -43,22 +43,17 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 
         auto attributes = primitive.attributes;
 
-        for (auto att : attributes)
-        {
-            std::cout << att.first << " - " << att.second << std::endl;
-        }
         auto positionIndex = attributes["POSITION"];
         auto normalIndex = attributes["NORMAL"];
         auto texCoordIndex = attributes["TEXCOORD_0"];
 
-        tinygltf::BufferView const &positionBufferView = model.bufferViews[positionIndex];
-        tinygltf::BufferView const &normalBufferView = model.bufferViews[normalIndex];
-        std::cout << "tex coorrd index: " << texCoordIndex << " : size : " << model.bufferViews.size() << std::endl;
-        tinygltf::BufferView const &texCoordBufferView = model.bufferViews[texCoordIndex];
-
         const tinygltf::Accessor &positionAccess = model.accessors[positionIndex];
         const tinygltf::Accessor &normalAccess = model.accessors[normalIndex];
         const tinygltf::Accessor &texCoordAccess = model.accessors[texCoordIndex];
+
+        tinygltf::BufferView const &positionBufferView = model.bufferViews[positionAccess.bufferView];
+        tinygltf::BufferView const &normalBufferView = model.bufferViews[normalAccess.bufferView];
+        tinygltf::BufferView const &texCoordBufferView = model.bufferViews[texCoordAccess.bufferView];
 
         tinygltf::Buffer &positionBuffer = model.buffers[positionBufferView.buffer];
         tinygltf::Buffer &normalBuffer = model.buffers[normalBufferView.buffer];
@@ -71,7 +66,6 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 
         for (size_t i = 0; i < positionAccess.count; ++i)
         {
-
             size_t posOffset = i *  3;
             glm::vec3 pos(positionData[posOffset + 0], positionData[posOffset + 1], positionData[posOffset + 2]);
 
@@ -81,8 +75,6 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
             size_t texOffset = i * 2;
             glm::vec2 texCoord(texCoordData[texOffset + 0], texCoordData[texOffset + 1]);
 
-
-            //std::cout << "texCoord -> x: " << texCoord.x << " y: " << texCoord.y << std::endl;
             mesh.vertices.push_back({pos, norm, texCoord});
         }
 
@@ -91,7 +83,6 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         tinygltf::Buffer &indexBuffer = model.buffers[indexBufferView.buffer];
 
         unsigned short* indices = reinterpret_cast<unsigned short*>(&indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset]);
-        std::cout << "target: " << indexAccessor.componentType << std::endl;
         for (size_t i = 0; i < indexAccessor.count; ++i) {
             mesh.indices.push_back((int) indices[i]);
         }
