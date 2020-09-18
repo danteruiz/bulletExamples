@@ -37,6 +37,43 @@ in vec3 vPosition;
 in vec2 TexCoord;
 const float PI = 3.14159265359;
 
+vec3 F_Schlick(vec3 f0, float f90, float u)
+{
+    return f0 + (f90 - f0) * pow(1.0f - u, 5.0f);
+}
+
+
+float V_SmithGGXCorrelated(float NdotL, float NdotV, float alphaG)
+{
+    float alphaG2 = alphaG * alphaG ;
+    // Caution : the " NdotL *" and " NdotV *" are explicitely inversed , this is not a mistake .
+    float Lambda_GGXV = NdotL * sqrt (( NdotV * alphaG2 + NdotV ) * NdotV + alphaG2 );
+    float Lambda_GGXL = NdotV * sqrt (( NdotL * alphaG2 + NdotL ) * NdotL + alphaG2 );
+
+    return 0.5f / ( Lambda_GGXV + Lambda_GGXL );
+}
+
+float D_GGX(float NdotH, float m)
+{
+    float m2 = m * m;
+    float f = (NdotH * m2 - NdotH) * NdotH + 1;
+    return m2 / (f * f);
+}
+
+
+float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH, float m)
+{
+
+    float energyBias = mix(0.0, 0.5, m);
+    float energyFactor = mix(1.0, 1.0 / 1.51, m);
+    float fd90  = energyBias + 2.0 * LdotH * LdotH * m;
+    vec3 f0 = vec3(1.0);
+    float lightScatter = F_Schlick(f0, fd90, NdotL).r;
+    float viewScatter = F_Schlick(f0, fd90, NdotV).r;
+
+    return lightScatter * viewScatter * energyFactor;
+}
+
 float NDF(float NdotH, float roughness)
 {
     float alpha = roughness * roughness;
@@ -68,7 +105,7 @@ float GSmith(float NdotL, float NdotV, float roughness)
 
 vec3 getNormal()
 {
-    vec3 tangentNormal = texture(normalMap, TexCoord).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normalMap, TexCoord).rgb * 2.0 - 1.0;
     vec3 q1 = dFdx(vPosition);
     vec3 q2 = dFdy(vPosition);
     vec2 st1 = dFdx(TexCoord);
@@ -88,6 +125,8 @@ void main() {
     vec3 l = normalize(light.position - vPosition);
     vec3 h = normalize(v + l);
     vec3 n = getNormal();
+    vec3 reflection = -normalize(reflect(v, n));
+    reflection.y *= -1.0;
 
     vec3 diffuseColor;
     vec3 baseColor = texture(albedoMap, TexCoord).rgb * material.color;
@@ -106,10 +145,10 @@ void main() {
     float alphaRoughness = perceptualRoughness * perceptualRoughness;
 
     vec3 specularColor = mix(f0, diffuseColor, metallic);
-
-    float cosTh = max(dot(n, h), 0.0);
-    float cosTi = max(dot(n, l), 0.0);
-
+    float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
+    f0 = specularColor;
+    float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
+    vec3 f90 = vec3(1.0) * reflectance90;
 
     float NdotL = clamp(dot(n, l), 0.001, 1.0);
     float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
@@ -117,23 +156,34 @@ void main() {
     float LdotH = clamp(dot(l, h), 0.0, 1.0);
     float VdotH = clamp(dot(v, h), 0.0, 1.0);
 
-    float distance = length(light.position - vPosition);
-    float attenuation = 1.0;
+    float d = length(light.position - vPosition);
+    float attenuation = light.intensity / d * d;
 
-    vec3 radiance = (light.color)  * attenuation;
-
-    float ndf = NDF(cosTh, perceptualRoughness);
-    float g = GSmith(NdotL, NdotV, perceptualRoughness);
-    vec3 fr = Fensel(VdotH, specularColor);
+    vec3 radiance = (light.color) * attenuation;
 
 
-    vec3 diffuseContrib = (1.0 - fr) * (diffuseColor / PI);
-    vec3 specContrib = ndf * g * fr / (4.0 * NdotL * NdotV);
+    float D = D_GGX(NdotH, perceptualRoughness);
+    //float D = NDF(NdotH, perceptualRoughness);
+    //float G = V_SmithGGXCorrelated(NdotV, NdotL, perceptualRoughness);
+    float G = GSmith(NdotL, NdotV, perceptualRoughness);
+    //vec3 F = F_Schlick(f0, f90, LdotH);
+    vec3 F = Fensel(VdotH, specularColor);
 
-    vec3 color = NdotL * light.color * (diffuseContrib + specContrib);
 
-    color = color / (color + vec3(1.0));
-    color = color = pow(color, vec3(1.0 / 2.2));
+    vec3 Fd =(1.0 - F) * (diffuseColor / PI);
+    vec3 Fr = D * G * F / (4.0 * NdotL * NdotV);
+
+
+    vec3 color = NdotL * radiance * (Fr + Fd);
+
+    float ao = texture(occlusionMap, TexCoord).r;
+    color += mix(color, color * ao, 1.0f);
+
+    vec3 emissive = texture(emissiveMap, TexCoord).rgb * 1.0f;
+    color += emissive;
+
+    //color = color / (color + vec3(1.0));
+    //color = color = pow(color, vec3(1.0 / 2.2));
     //color = baseColor;
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(color, material.ao);
 }

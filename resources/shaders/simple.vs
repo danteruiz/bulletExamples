@@ -12,8 +12,9 @@ out vec3 vNormal;
 out vec3 vPosition;
 out vec2 TexCoord;
 void main() {
-    vPosition = mat3(model) * aPos;
-    vNormal = normalize(transpose(inverse(mat3(model))) * aNormal);
+    mat3 modelMatrix = mat3(model);
+    vPosition = modelMatrix * aPos;
+    vNormal = normalize(inverse(modelMatrix) * aNormal);
     TexCoord = aTexCoord;
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

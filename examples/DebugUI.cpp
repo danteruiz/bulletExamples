@@ -46,7 +46,7 @@ void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<vo
     ImGui::Text("Light");
     ImGui::Separator();
     ImGui::SliderFloat("ambient", &light.ambient, 0.0f, 1.0f);
-    ImGui::SliderFloat("intensity", &light.intensity, 0.0f, 400.0f);
+    ImGui::SliderFloat("intensity", &light.intensity, 0.0f, 6.0f);
     ImGui::SliderFloat("position.x", &light.position.x, -50.0f, 50.0f);
     ImGui::SliderFloat("position.y", &light.position.y, -50.0f, 50.0f);
     ImGui::SliderFloat("position.z", &light.position.z, -50.0f, 50.0f);

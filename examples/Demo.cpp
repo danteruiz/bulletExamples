@@ -253,7 +253,7 @@ DemoApplication::DemoApplication()
     floorEntity.scale = glm::vec3(30.0f, 0.1f, 30.0f);
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
 
-    suzanneEntity.rotation = glm::quat(glm::radians(glm::vec3(0.0f, 180.0f, 0.0)));
+    suzanneEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 180.0f, 0.0)));
 
 
     m_skybox.texture = loadCubeMap(CUBE_MAP_IMAGES);
@@ -284,11 +284,14 @@ struct RenderArgs
 };
 
 
-void enableTexture(int slot, std::shared_ptr<Texture> const &texture)
+void enableTexture(unsigned int slot, std::shared_ptr<Texture> const &texture)
 {
     if (texture) {
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, texture->id);
+    } else
+    {
+        std::cout << "No Texture" << std::endl;
     }
 }
 
@@ -316,15 +319,21 @@ void renderEntities(RenderArgs const &renderArgs)
             shader->setUniform1f("material.roughness", material->roughness);
             shader->setUniform1f("material.metallic", material->metallic);
             shader->setUniform1f("material.ao", material->ao);
-            auto vertexBuffer = mesh.vertexBuffer;
-            vertexBuffer->bind();
-            vertexBuffer->getLayout()->enableAttributes();
+            shader->setUniform1i("albedoMap", 0);
+            shader->setUniform1i("normalMap", 1);
+            shader->setUniform1i("metallicMap", 2);
+            shader->setUniform1i("occlusionMap", 3);
+            shader->setUniform1i("emissiveMap", 4);
+
 
             enableTexture(0, material->albedoTexture);
             enableTexture(1, material->normalTexture);
             enableTexture(2, material->metallicTexture);
             enableTexture(3, material->occlusionTexture);
             enableTexture(4, material->emissiveTexture);
+            auto vertexBuffer = mesh.vertexBuffer;
+            vertexBuffer->bind();
+            vertexBuffer->getLayout()->enableAttributes();
 
             mesh.indexBuffer->bind();
             glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -426,7 +435,7 @@ void DemoApplication::exec()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
-        //drawSkybox(m_skybox, renderArgs);
+        drawSkybox(m_skybox, renderArgs);
         renderEntities(renderArgs);
         m_debugDraw->renderMarkers(getMarkers(renderArgs), view, projection);
         imgui::render();

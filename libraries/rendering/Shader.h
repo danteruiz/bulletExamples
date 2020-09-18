@@ -18,6 +18,7 @@ public:
     void setUniformVec4(std::string const &name, glm::vec4 const &vec) const;
     void setUniformVec3(std::string const &name, glm::vec3 const &vec) const;
     void setUniform1f(std::string const &name, float f) const;
+    void setUniform1i(std::string const &name, int i) const;
 
 private:
     int m_id;
