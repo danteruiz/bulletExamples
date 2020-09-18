@@ -18,7 +18,7 @@
 #include <vector>
 #include <string>
 
-std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model  &model, int index)
+std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model  &model, int index, std::string name)
 {
     if (index < 0)
     {
@@ -26,7 +26,7 @@ std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model  &model, int index)
     }
 
     tinygltf::Texture const &gltfTexture = model.textures[index];
-    std::cout << "Creating Texuture: " << gltfTexture.name << std::endl;
+    std::cout << "Creating Texuture: " << name << std::endl;
     tinygltf::Image &image = model.images[gltfTexture.source];
 
     return createTextureFromGLTF(image.width, image.height, image.component, image.bits, &image.image.at(0));
@@ -42,7 +42,6 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 
 
         auto attributes = primitive.attributes;
-
         auto positionIndex = attributes["POSITION"];
         auto normalIndex = attributes["NORMAL"];
         auto texCoordIndex = attributes["TEXCOORD_0"];
@@ -93,8 +92,6 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         std::shared_ptr<Material> material = std::make_shared<Material>();
         tinygltf::Material const &gltfMaterial = model.materials[primitive.material];
 
-        std::cout << "Material name: " << gltfMaterial.name << std::endl;
-
         auto pbrMaterial = gltfMaterial.pbrMetallicRoughness;
         auto pbrBaseColor = pbrMaterial.baseColorFactor;
         material->albedo = glm::vec3(pbrBaseColor[0], pbrBaseColor[1], pbrBaseColor[2]);
@@ -103,14 +100,11 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         material->emissive = glm::vec3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
         material->roughness = (float) pbrMaterial.roughnessFactor;
         material->metallic = (float) pbrMaterial.metallicFactor;
-        material->albedoTexture = loadMaterialTexture(model, pbrMaterial.baseColorTexture.index);
-        material->normalTexture = loadMaterialTexture(model, gltfMaterial.normalTexture.index);
-        material->emissiveTexture = loadMaterialTexture(model, gltfMaterial.emissiveTexture.index);
-        material->occlusionTexture = loadMaterialTexture(model, gltfMaterial.occlusionTexture.index);
-        material->metallicTexture = loadMaterialTexture(model, pbrMaterial.metallicRoughnessTexture.index);
-
-        std::cout << "material roughness: " << material->roughness << std::endl;
-        std::cout << "material metallic: " << material->metallic << std::endl;
+        material->albedoTexture = loadMaterialTexture(model, pbrMaterial.baseColorTexture.index, "albedo");
+        material->normalTexture = loadMaterialTexture(model, gltfMaterial.normalTexture.index, "normal");
+        material->emissiveTexture = loadMaterialTexture(model, gltfMaterial.emissiveTexture.index, "emissive");
+        material->occlusionTexture = loadMaterialTexture(model, gltfMaterial.occlusionTexture.index, "occlusion");
+        material->metallicTexture = loadMaterialTexture(model, pbrMaterial.metallicRoughnessTexture.index, "metallic");
 
         mesh.material = material;
     }

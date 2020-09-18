@@ -23,11 +23,6 @@ struct Material
     float specular;
     float metallic;
     float ao;
-    int normalTextureSet;
-    int albedoTextureSet;
-    int emissiveTextureSet;
-    int occlusionTextureSet;
-    int metallicTextureSet;
 };
 
 out vec4 FragColor;
@@ -65,16 +60,34 @@ float GSmith(float NdotL, float NdotV, float roughness)
 {
     float r = roughness * roughness;
     float attenuationL = 2.0 * NdotL / (NdotL + sqrt(r * r + (1.0 - r * r) * (NdotL * NdotL)));
-	float attenuationV = 2.0 * NdotV / (NdotV + sqrt(r * r + (1.0 - r * r) * (NdotV * NdotV)));
-	//return attenuationL * attenuationV;
-    return (ShlickGGX(NdotL, roughness) * ShlickGGX(NdotV, roughness));
+    float attenuationV = 2.0 * NdotV / (NdotV + sqrt(r * r + (1.0 - r * r) * (NdotV * NdotV)));
+    return attenuationL * attenuationV;
+    //return (ShlickGGX(NdotL, roughness) * ShlickGGX(NdotV, roughness));
+}
+
+
+vec3 getNormal()
+{
+    vec3 tangentNormal = texture(normalMap, TexCoord).xyz * 2.0 - 1.0;
+    vec3 q1 = dFdx(vPosition);
+    vec3 q2 = dFdy(vPosition);
+    vec2 st1 = dFdx(TexCoord);
+    vec2 st2 = dFdy(TexCoord);
+
+    vec3 N = normalize(vNormal);
+    vec3 T = normalize(q1 * st2.t - q1 * st1.t);
+    vec3 B = normalize(cross(N,T));
+
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(TBN * tangentNormal);
 }
 
 void main() {
     vec3 v = normalize(cameraPosition - vPosition);
     vec3 l = normalize(light.position - vPosition);
     vec3 h = normalize(v + l);
-    vec3 n = vNormal;
+    vec3 n = getNormal();
 
     vec3 diffuseColor;
     vec3 baseColor = texture(albedoMap, TexCoord).rgb * material.color;
@@ -119,8 +132,8 @@ void main() {
 
     vec3 color = NdotL * light.color * (diffuseContrib + specContrib);
 
-    //color = color / (color + vec3(1.0));
-    //color = color = pow(color, vec3(1.0 / 2.2));
+    color = color / (color + vec3(1.0));
+    color = color = pow(color, vec3(1.0 / 2.2));
     //color = baseColor;
     FragColor = vec4(color, 1.0);
 }

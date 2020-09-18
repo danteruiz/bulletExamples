@@ -362,7 +362,10 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
     vertexBuffer->bind();
     vertexBuffer->getLayout()->enableAttributes();
 
-    enableTexture(0, skybox.texture);
+    //enableTexture(0, skybox.texture);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.texture->id);
 
     mesh.indexBuffer->bind();
     glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -423,7 +426,7 @@ void DemoApplication::exec()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
-        drawSkybox(m_skybox, renderArgs);
+        //drawSkybox(m_skybox, renderArgs);
         renderEntities(renderArgs);
         m_debugDraw->renderMarkers(getMarkers(renderArgs), view, projection);
         imgui::render();
