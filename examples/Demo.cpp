@@ -222,44 +222,20 @@ DemoApplication::DemoApplication()
     glBindVertexArray(VAO);
 
 
-
-
     m_debugUI = std::make_shared<DebugUI>(m_window);
     m_basicShapes = std::make_shared<BasicShapes>();
-
-    Entity cubeEntity;
-    Entity floorEntity;
-    Entity sphereEntity;
-    Entity suzanneEntity;
-    cubeEntity.model = m_basicShapes->getShape(BasicShapes::CUBE);
-    floorEntity.model = m_basicShapes->getShape(BasicShapes::CUBE);
-    sphereEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
-    suzanneEntity.model = loadModel(m_debugUI->getModelPath());
-
-    cubeEntity.material = std::make_shared<Material>();
-    floorEntity.material = std::make_shared<Material>();
-    sphereEntity.material = std::make_shared<Material>();
-    suzanneEntity.material = std::make_shared<Material>();
-
-    cubeEntity.name = "cube";
-    sphereEntity.name = "sphere";
-    floorEntity.name = "floor";
-    suzanneEntity.name = "suzanne";
-    cubeEntity.material->albedo = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    sphereEntity.material->albedo = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-
-    floorEntity.material->albedo = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);
-    floorEntity.translation = glm::vec3(0.0f, -4.0f, 1.0f);
-    floorEntity.scale = glm::vec3(30.0f, 0.1f, 30.0f);
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
 
-    suzanneEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 180.0f, 0.0)));
+    // setting up model entity
+    m_modelEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 180.0f, 0.0)));
+    m_modelEntity.model = loadModel(m_debugUI->getModelPath());
 
-
+    // setting up skybox
     m_skybox.texture = loadCubeMap(CUBE_MAP_IMAGES);
     m_skybox.shader = std::make_shared<Shader>(SKYBOX_FRAG, SKYBOX_VERT);
     m_skybox.model = m_basicShapes->getShape(BasicShapes::CUBE);
 
+    // setting up lighting
     m_light.position = glm::vec3(-1.6f, 8.0f, 0.0f);
     m_light.ambient = 0.05f;
     m_light.intensity = 0.9f;
@@ -269,7 +245,7 @@ DemoApplication::DemoApplication()
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
 
 
-    m_entities = { suzanneEntity };
+    // setup debug rendering objects
     m_pipeline = std::make_shared<Shader>(fragmentShader, vertexShader);
     m_debugDraw = std::make_shared<DebugDraw>();
 }
@@ -278,7 +254,7 @@ struct RenderArgs
 {
     glm::mat4 view;
     glm::mat4 projection;
-    std::vector<Entity> entities;
+    Entity modelEntity;
     Light light;
     std::shared_ptr<Shader> shader;
 };
@@ -295,49 +271,47 @@ void enableTexture(unsigned int slot, std::shared_ptr<Texture> const &texture)
     }
 }
 
-void renderEntities(RenderArgs const &renderArgs)
+void renderModelEntity(RenderArgs const &renderArgs)
 {
     auto shader = renderArgs.shader;
-    for (auto entity: renderArgs.entities)
+    auto entity = renderArgs.modelEntity;
+    auto geometry = entity.model;
+    for (auto mesh: geometry->meshes)
     {
-        auto geometry = entity.model;
-        for (auto mesh: geometry->meshes)
-        {
 
-            auto material = mesh.material ? mesh.material : entity.material;
+        auto material = mesh.material ? mesh.material : entity.material;
 
-            shader->bind();
-            shader->setUniformMat4("model", getMatrix(entity));
-            shader->setUniformMat4("projection", renderArgs.projection);
-            shader->setUniformMat4("view", renderArgs.view);
-            shader->setUniform1f("light.intensity", renderArgs.light.intensity);
-            shader->setUniform1f("light.ambient", renderArgs.light.ambient);
-            shader->setUniformVec3("light.color", renderArgs.light.color);
-            shader->setUniformVec3("light.position", renderArgs.light.position);
-            shader->setUniformVec3("cameraPosition", camera.position);
-            shader->setUniformVec3("material.color", material->albedo);
-            shader->setUniform1f("material.roughness", material->roughness);
-            shader->setUniform1f("material.metallic", material->metallic);
-            shader->setUniform1f("material.ao", material->ao);
-            shader->setUniform1i("albedoMap", 0);
-            shader->setUniform1i("normalMap", 1);
-            shader->setUniform1i("metallicMap", 2);
-            shader->setUniform1i("occlusionMap", 3);
-            shader->setUniform1i("emissiveMap", 4);
+        shader->bind();
+        shader->setUniformMat4("model", getMatrix(entity));
+        shader->setUniformMat4("projection", renderArgs.projection);
+        shader->setUniformMat4("view", renderArgs.view);
+        shader->setUniform1f("light.intensity", renderArgs.light.intensity);
+        shader->setUniform1f("light.ambient", renderArgs.light.ambient);
+        shader->setUniformVec3("light.color", renderArgs.light.color);
+        shader->setUniformVec3("light.position", renderArgs.light.position);
+        shader->setUniformVec3("cameraPosition", camera.position);
+        shader->setUniformVec3("material.color", material->albedo);
+        shader->setUniform1f("material.roughness", material->roughness);
+        shader->setUniform1f("material.metallic", material->metallic);
+        shader->setUniform1f("material.ao", material->ao);
+        shader->setUniform1i("albedoMap", 0);
+        shader->setUniform1i("normalMap", 1);
+        shader->setUniform1i("metallicMap", 2);
+        shader->setUniform1i("occlusionMap", 3);
+        shader->setUniform1i("emissiveMap", 4);
 
 
-            enableTexture(0, material->albedoTexture);
-            enableTexture(1, material->normalTexture);
-            enableTexture(2, material->metallicTexture);
-            enableTexture(3, material->occlusionTexture);
-            enableTexture(4, material->emissiveTexture);
-            auto vertexBuffer = mesh.vertexBuffer;
-            vertexBuffer->bind();
-            vertexBuffer->getLayout()->enableAttributes();
+        enableTexture(0, material->albedoTexture);
+        enableTexture(1, material->normalTexture);
+        enableTexture(2, material->metallicTexture);
+        enableTexture(3, material->occlusionTexture);
+        enableTexture(4, material->emissiveTexture);
+        auto vertexBuffer = mesh.vertexBuffer;
+        vertexBuffer->bind();
+        vertexBuffer->getLayout()->enableAttributes();
 
-            mesh.indexBuffer->bind();
-            glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
-        }
+        mesh.indexBuffer->bind();
+        glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
     }
 }
 
@@ -346,12 +320,11 @@ std::vector<Marker> getMarkers(RenderArgs const &renderArgs) {
     light.position = renderArgs.light.position;
 
     std::vector<Marker> markers;
-    for (auto entity : renderArgs.entities) {
-        Marker entityMarker;
-        entityMarker.position = entity.translation;
-        entityMarker.orientation = entity.rotation;
-        markers.push_back(entityMarker);
-    }
+    auto entity = renderArgs.modelEntity;
+    Marker entityMarker;
+    entityMarker.position = entity.translation;
+    entityMarker.orientation = entity.rotation;
+    markers.push_back(entityMarker);
     markers.push_back(light);
 
     return markers;
@@ -370,8 +343,6 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
     auto vertexBuffer = mesh.vertexBuffer;
     vertexBuffer->bind();
     vertexBuffer->getLayout()->enableAttributes();
-
-    //enableTexture(0, skybox.texture);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.texture->id);
@@ -418,16 +389,16 @@ void DemoApplication::exec()
         };
 
         auto loadNewModel = [&](std::string path) {
-            m_entities[1].model = loadModel(path);
+            m_modelEntity.model = loadModel(path);
         };
 
-        m_debugUI->show(m_entities, m_light, [&] {
+        m_debugUI->show(m_modelEntity, m_light, [&] {
             m_pipeline = std::make_shared<Shader> (fragmentShader, vertexShader);
         }, loadNewModel);
         RenderArgs renderArgs;
         renderArgs.view = view;
         renderArgs.projection = projection;
-        renderArgs.entities = m_entities;
+        renderArgs.modelEntity = m_modelEntity;
         renderArgs.light = m_light;
         renderArgs.shader = m_pipeline;
 
@@ -436,7 +407,10 @@ void DemoApplication::exec()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.0f ,0.0f, 1.0f);
         drawSkybox(m_skybox, renderArgs);
-        renderEntities(renderArgs);
+        if (m_modelEntity.model)
+        {
+            renderModelEntity(renderArgs);
+        }
         m_debugDraw->renderMarkers(getMarkers(renderArgs), view, projection);
         imgui::render();
         m_window->swap();

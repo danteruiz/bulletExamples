@@ -26,7 +26,7 @@ DebugUI::~DebugUI()
     imgui::uninitialize();
 }
 
-void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<void()> compileShader, std::function<void(std::string)> loadNewModel)
+void DebugUI::show(Entity const &entity, Light &light, std::function<void()> compileShader, std::function<void(std::string)> loadNewModel)
 {
     m_lightColor[0] = light.color.x;
     m_lightColor[1] = light.color.y;
@@ -35,6 +35,10 @@ void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<vo
     m_focus = ImGui::GetIO().WantCaptureMouse;
     imgui::newFrame();
     ImGui::Begin("DebugUI");
+
+    if (ImGui::Button("Recompile PBR Shader")) {
+        compileShader();
+    }
     if (ImGui::Button("LoadModel"))
     {
         loadNewModel(m_path);
@@ -60,15 +64,9 @@ void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<vo
 
     ImGui::Separator();
 
-    std::vector<std::string> entityNames;
-
-    for (auto entity: entities)
-    {
-        entityNames.push_back(entity.name);
-    }
     ImGui::Separator();
 
-    imgui::ListBox("Entities", &m_entityIndex, entityNames);
+    /*imgui::ListBox("Entities", &m_entityIndex, entityNames);
 
     ImGui::Separator();
     ImGui::Text("Edit Entity");
@@ -87,7 +85,7 @@ void DebugUI::show(std::vector<Entity> &entities, Light &light, std::function<vo
 
     ImGui::SliderFloat("roughness", &material->roughness, 0.0f, 1.0f);
     ImGui::SliderFloat("metallic", &material->metallic, 0.0f, 1.0f);
-    ImGui::SliderFloat("ao", &material->ao, 0.0f, 1.0f);
+    ImGui::SliderFloat("ao", &material->ao, 0.0f, 1.0f);*/
     ImGui::End();
 };
 

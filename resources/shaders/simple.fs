@@ -37,12 +37,6 @@ in vec3 vPosition;
 in vec2 TexCoord;
 const float PI = 3.14159265359;
 
-vec3 F_Schlick(vec3 f0, float f90, float u)
-{
-    return f0 + (f90 - f0) * pow(1.0f - u, 5.0f);
-}
-
-
 float V_SmithGGXCorrelated(float NdotL, float NdotV, float alphaG)
 {
     float alphaG2 = alphaG * alphaG ;
@@ -68,10 +62,10 @@ float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH, float m)
     float energyFactor = mix(1.0, 1.0 / 1.51, m);
     float fd90  = energyBias + 2.0 * LdotH * LdotH * m;
     vec3 f0 = vec3(1.0);
-    float lightScatter = F_Schlick(f0, fd90, NdotL).r;
-    float viewScatter = F_Schlick(f0, fd90, NdotV).r;
+   // float lightScatter = F_Schlick(f0, fd90, NdotL).r;
+    //float viewScatter = F_Schlick(f0, fd90, NdotV).r;
 
-    return lightScatter * viewScatter * energyFactor;
+    return 0.0f;//lightScatter * viewScatter * energyFactor;
 }
 
 float NDF(float NdotH, float roughness)
@@ -81,7 +75,7 @@ float NDF(float NdotH, float roughness)
     float f = (NdotH * roughness2 - NdotH) * NdotH + 1.0;
     return roughness2 / (PI * f * f);
 }
-vec3 Fensel(float VdotH, vec3 f)
+vec3 F_Schlick(float VdotH, vec3 f)
 {
     return f + (1.0 -f) * pow((1.0 - VdotH), 5.0);
 }
@@ -162,13 +156,11 @@ void main() {
     vec3 radiance = (light.color) * attenuation;
 
 
-    float D = D_GGX(NdotH, perceptualRoughness);
-    //float D = NDF(NdotH, perceptualRoughness);
+    //float D = D_GGX(NdotH, perceptualRoughness);
+    float D = NDF(NdotH, perceptualRoughness);
     //float G = V_SmithGGXCorrelated(NdotV, NdotL, perceptualRoughness);
     float G = GSmith(NdotL, NdotV, perceptualRoughness);
-    //vec3 F = F_Schlick(f0, f90, LdotH);
-    vec3 F = Fensel(VdotH, specularColor);
-
+    vec3 F = F_Schlick(VdotH, specularColor);
 
     vec3 Fd =(1.0 - F) * (diffuseColor / PI);
     vec3 Fr = D * G * F / (4.0 * NdotL * NdotV);

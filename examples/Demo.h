@@ -42,15 +42,15 @@ public:
     DemoApplication();
     void exec() override;
 private:
-    std::vector<Entity> m_entities;
     Light m_light;
+    Entity m_modelEntity;
+    Skybox m_skybox;
+
+
     std::shared_ptr<BasicShapes> m_basicShapes;
     std::shared_ptr<DebugUI> m_debugUI;
-
     std::vector<Light> m_lights;
-
     std::shared_ptr<Shader> m_pipeline { nullptr };
     std::shared_ptr<DebugDraw> m_debugDraw { nullptr };
     std::vector<Marker> m_markers;
-    Skybox m_skybox;
 };

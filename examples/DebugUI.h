@@ -13,7 +13,7 @@ class DebugUI
 public:
     DebugUI(std::shared_ptr<Window> const &window);
     ~DebugUI();
-    void show(std::vector<Entity> &entites, Light &light, std::function<void()> compileShader, std::function<void(std::string)> loadNewModel);
+    void show(Entity const &entites, Light &light, std::function<void()> compileShader, std::function<void(std::string)> loadNewModel);
     bool focus();
     std::string getModelPath() const { return m_path; }
 
