@@ -34,9 +34,11 @@
 #ifdef __APPLE__
 static std::string shaderPath("/Users/danteruiz/code/rendering-examples/resources/shaders/");
 static std::string imagePath("/Users/danteruiz/code/rendering-examples/resources/skybox/");
+static std::string resources("/Users/danteruiz/code/rendering-examples/resources/");
 #else
 static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
 static std::string imagePath("C:/Users/dante/code/rendering-examples/resources/skybox/");
+static std::string resources("C:/Users/dante/code/rendering-examples/resources/");
 #endif
 
 static const std::string vertexShader = shaderPath + "simple.vs";
@@ -50,6 +52,10 @@ static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
 static glm::vec3 const UNIT_X(1.0f, 0.0f, 0.0f);
 static glm::vec3 const UNIT_Y(0.0f, 1.0f, 0.0f);
 
+
+
+static std::string const IBLTexturePath = resources + "images/IBL/TropicalBeach/Tropical_Beach_3k.hdr";
+std::shared_ptr<Texture> IBLTexture;
 
 
 std::array<std::string, 6> CUBE_MAP_IMAGES
@@ -235,6 +241,8 @@ DemoApplication::DemoApplication()
     m_skybox.shader = std::make_shared<Shader>(SKYBOX_FRAG, SKYBOX_VERT);
     m_skybox.model = m_basicShapes->getShape(BasicShapes::CUBE);
 
+    IBLTexture = loadIBLTexture(IBLTexturePath);
+
     // setting up lighting
     m_light.position = glm::vec3(-1.6f, 8.0f, 0.0f);
     m_light.ambient = 0.05f;
@@ -343,9 +351,10 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
     auto vertexBuffer = mesh.vertexBuffer;
     vertexBuffer->bind();
     vertexBuffer->getLayout()->enableAttributes();
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.texture->id);
+    shader->setUniform1i("map", 0);
+    enableTexture(0, IBLTexture);
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.texture->id);
 
     mesh.indexBuffer->bind();
     glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);

@@ -151,9 +151,9 @@ void main() {
     float VdotH = clamp(dot(v, h), 0.0, 1.0);
 
     float d = length(light.position - vPosition);
-    float attenuation = light.intensity / d * d;
+    float attenuation = 1.0 / d * d;
 
-    vec3 radiance = (light.color) * attenuation;
+    vec3 radiance = light.color * attenuation;
 
 
     //float D = D_GGX(NdotH, perceptualRoughness);
@@ -163,6 +163,7 @@ void main() {
     vec3 F = F_Schlick(VdotH, specularColor);
 
     vec3 Fd =(1.0 - F) * (diffuseColor / PI);
+    //Fd *= 1.0 - metallic;
     vec3 Fr = D * G * F / (4.0 * NdotL * NdotV);
 
 

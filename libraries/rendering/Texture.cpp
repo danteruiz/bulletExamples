@@ -104,3 +104,37 @@ std::shared_ptr<Texture> loadCubeMap(std::array<std::string, 6> imagePaths)
 
     return texture;
 }
+
+
+
+std::shared_ptr<Texture> loadIBLTexture(std::string path)
+{
+    stbi_set_flip_vertically_on_load(true);
+    int width, height, nrComponents;
+    float *data = stbi_loadf(path.c_str(), &width, &height, &nrComponents, 0);
+
+    std::cout << "is HDR image: " <<  stbi_is_hdr(path.c_str()) << std::endl;
+    std::shared_ptr<Texture> IBLTexture= std::make_shared<Texture>();
+    if (data)
+    {
+        glGenTextures(1, &IBLTexture->id);
+        glBindTexture(GL_TEXTURE_2D, IBLTexture->id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    } else
+    {
+        std::cout << "Failed to load texture: " << path << std::endl;
+    }
+
+    return IBLTexture;
+}
+
+
+
+
