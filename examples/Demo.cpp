@@ -11,7 +11,7 @@
 #include <functional>
 #include <memory>
 #include <chrono>
-
+#define _USE_MATH_DEFINES
 
 #include <Shader.h>
 #include <Window.h>
@@ -25,6 +25,7 @@
 #include <Model.h>
 #include <Format.h>
 #include <Texture.h>
+#include <math.h>
 
 #include <imgui/Imgui.h>
 
@@ -52,6 +53,8 @@ static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
 static glm::vec3 const UNIT_X(1.0f, 0.0f, 0.0f);
 static glm::vec3 const UNIT_Y(0.0f, 1.0f, 0.0f);
 
+
+static float const TWO_PI = 2 * M_PI;
 
 
 static std::string const IBLTexturePath = resources + "images/IBL/TropicalBeach/Tropical_Beach_3k.hdr";
@@ -170,6 +173,17 @@ glm::mat4 model;
 glm::mat4 floorModel;
 
 
+
+float yawOffset = 0.0f;
+void rotateCameraAroundEntity(Entity const &entity, float deltaTime)
+{
+    static float const YAW_SPEED = TWO_PI;
+
+    yawOffset +=  YAW_SPEED * deltaTime;
+
+    camera.orientation = glm::quat(glm::radians(glm::vec3(0.0f, yawOffset, 0.0f)));
+    camera.position = entity.translation + ((camera.orientation * UNIT_Z) * -4.0f);
+}
 struct MarkerVertex
 {
     MarkerVertex(glm::vec3 pos, glm::vec3 col) : position(pos), color(col) {}
@@ -232,7 +246,7 @@ DemoApplication::DemoApplication()
     m_basicShapes = std::make_shared<BasicShapes>();
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
 
-    // setting up model entity
+    // setting up model entity 90.0f, 180.0f
     m_modelEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 180.0f, 0.0)));
     m_modelEntity.model = loadModel(m_debugUI->getModelPath());
 
@@ -380,8 +394,10 @@ void DemoApplication::exec()
         mouse->update();
         if (!m_debugUI->focus())
         {
-            updateCameraOrientation(mouse, deltaTime);
-            updateCameraPosition(keyboard, deltaTime);
+            //updateCameraOrientation(mouse, deltaTime);
+            //updateCameraPosition(keyboard, deltaTime);
+
+            rotateCameraAroundEntity(m_modelEntity, deltaTime);
         }
 
 
