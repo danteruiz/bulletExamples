@@ -15,6 +15,7 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D occlusionMap;
 uniform sampler2D emissiveMap;
+uniform samplerCube irradianceMap;
 
 struct Material
 {
@@ -153,26 +154,27 @@ void main() {
     float d = length(light.position - vPosition);
     float attenuation = 1.0 / d * d;
 
-    vec3 radiance = light.color * attenuation;
+    vec3 radiance = light.color;// * attenuation;
 
 
-    //float D = D_GGX(NdotH, perceptualRoughness);
     float D = NDF(NdotH, perceptualRoughness);
-    //float G = V_SmithGGXCorrelated(NdotV, NdotL, perceptualRoughness);
     float G = GSmith(NdotL, NdotV, perceptualRoughness);
     vec3 F = F_Schlick(VdotH, specularColor);
 
+
+    vec3 irradiance = texture(irradianceMap, n).rgb;
     vec3 Fd =(1.0 - F) * (diffuseColor / PI);
-    //Fd *= 1.0 - metallic;
     vec3 Fr = D * G * F / (4.0 * NdotL * NdotV);
 
 
     vec3 color = NdotL * radiance * (Fr + Fd);
 
+
+    color += irradiance * diffuseColor;
     float ao = texture(occlusionMap, TexCoord).r;
     color += mix(color, color * ao, 1.0f);
 
-    vec3 emissive = texture(emissiveMap, TexCoord).rgb * 1.0f;
+    vec3 emissive = texture(emissiveMap, TexCoord).rgb * 1.0;
     color += emissive;
 
     //color = color / (color + vec3(1.0));

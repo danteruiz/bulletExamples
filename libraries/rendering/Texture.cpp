@@ -113,7 +113,6 @@ std::shared_ptr<Texture> loadIBLTexture(std::string path)
     int width, height, nrComponents;
     float *data = stbi_loadf(path.c_str(), &width, &height, &nrComponents, 0);
 
-    std::cout << "is HDR image: " <<  stbi_is_hdr(path.c_str()) << std::endl;
     std::shared_ptr<Texture> IBLTexture= std::make_shared<Texture>();
     if (data)
     {

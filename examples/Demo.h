@@ -51,6 +51,8 @@ private:
     std::shared_ptr<DebugUI> m_debugUI;
     std::vector<Light> m_lights;
     std::shared_ptr<Shader> m_pipeline { nullptr };
+    std::shared_ptr<Shader> m_irradiance { nullptr };
+    std::shared_ptr<Shader> m_convertToCubeMap { nullptr };
     std::shared_ptr<DebugDraw> m_debugDraw { nullptr };
     std::vector<Marker> m_markers;
 };

@@ -21,6 +21,7 @@
 #include <Keyboard.h>
 #include <Buffer.h>
 #include <GL/glew.h>
+#include <GL/gl.h>
 #include <BasicShapes.h>
 #include <Model.h>
 #include <Format.h>
@@ -48,6 +49,8 @@ static const std::string debugFragmentShader = shaderPath + "debug.fs";
 static const std::string debugVertexShader = shaderPath + "debug.vs";
 static const std::string SKYBOX_FRAG = shaderPath + "skybox.fs";
 static const std::string SKYBOX_VERT = shaderPath + "skybox.vs";
+static const std::string CONVERT_TO_CUBE_MAP = shaderPath + "convertToCubeMap.fs";
+static const std::string IRRADIANCE_CONVOLUTION = shaderPath + "irradianceConvolution.fs";
 
 static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
 static glm::vec3 const UNIT_X(1.0f, 0.0f, 0.0f);
@@ -61,6 +64,8 @@ static std::string const IBLTexturePath = resources + "images/IBL/TropicalBeach/
 std::shared_ptr<Texture> IBLTexture;
 
 
+unsigned int captureFBO, captureRBO, envCubemap, irradianceMap;
+
 std::array<std::string, 6> CUBE_MAP_IMAGES
 {
     imagePath + "right.jpg",
@@ -70,6 +75,7 @@ std::array<std::string, 6> CUBE_MAP_IMAGES
     imagePath + "front.jpg",
     imagePath + "back.jpg"
 };
+
 
 struct Camera
 {
@@ -270,6 +276,126 @@ DemoApplication::DemoApplication()
     // setup debug rendering objects
     m_pipeline = std::make_shared<Shader>(fragmentShader, vertexShader);
     m_debugDraw = std::make_shared<DebugDraw>();
+
+    m_convertToCubeMap = std::make_shared<Shader>(CONVERT_TO_CUBE_MAP, SKYBOX_VERT);
+    m_irradiance = std::make_shared<Shader>(IRRADIANCE_CONVOLUTION, SKYBOX_VERT);
+
+
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+
+
+    glGenFramebuffers(1, &captureFBO);
+    glGenRenderbuffers(1, &captureRBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+
+
+
+    glGenTextures(1, &envCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        // note that we store each face with 16 bit floating point values
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
+                     512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
+    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    glm::mat4 captureViews[] = {
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+    };
+
+
+    m_convertToCubeMap->bind();
+    m_convertToCubeMap->setUniformMat4("projection", captureProjection);
+    m_convertToCubeMap->setUniform1i("hdrTexture", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, IBLTexture->id);
+
+    glViewport(0, 0, 512, 512);
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        m_convertToCubeMap->setUniformMat4("view", captureViews[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        //renderCube();
+
+        auto mesh = m_skybox.model->meshes[0];
+        auto vertexBuffer = mesh.vertexBuffer;
+        vertexBuffer->bind();
+        vertexBuffer->getLayout()->enableAttributes();
+
+        mesh.indexBuffer->bind();
+        glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+    // irradiance map
+    glGenTextures(1, &irradianceMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
+
+    // pbr: solve diffuse integral by convolution to create an irradiance (cube)map.
+    // -----------------------------------------------------------------------------
+    m_irradiance->bind();
+    m_irradiance->setUniform1i("envMap", 0);
+    m_irradiance->setUniformMat4("projection", captureProjection);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+
+    glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        m_irradiance->setUniformMat4("view", captureViews[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto mesh = m_skybox.model->meshes[0];
+        auto vertexBuffer = mesh.vertexBuffer;
+        vertexBuffer->bind();
+        vertexBuffer->getLayout()->enableAttributes();
+
+        mesh.indexBuffer->bind();
+        glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    m_window->setWidthAndHeight(1800, 1200);
 }
 
 struct RenderArgs
@@ -281,6 +407,13 @@ struct RenderArgs
     std::shared_ptr<Shader> shader;
 };
 
+
+
+void enableCubeTexture(unsigned int slot, unsigned int texture)
+{
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+}
 
 void enableTexture(unsigned int slot, std::shared_ptr<Texture> const &texture)
 {
@@ -321,6 +454,7 @@ void renderModelEntity(RenderArgs const &renderArgs)
         shader->setUniform1i("metallicMap", 2);
         shader->setUniform1i("occlusionMap", 3);
         shader->setUniform1i("emissiveMap", 4);
+        shader->setUniform1i("irradianceMap", 5);
 
 
         enableTexture(0, material->albedoTexture);
@@ -328,6 +462,7 @@ void renderModelEntity(RenderArgs const &renderArgs)
         enableTexture(2, material->metallicTexture);
         enableTexture(3, material->occlusionTexture);
         enableTexture(4, material->emissiveTexture);
+        enableCubeTexture(5, irradianceMap);
         auto vertexBuffer = mesh.vertexBuffer;
         vertexBuffer->bind();
         vertexBuffer->getLayout()->enableAttributes();
@@ -365,10 +500,11 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
     auto vertexBuffer = mesh.vertexBuffer;
     vertexBuffer->bind();
     vertexBuffer->getLayout()->enableAttributes();
-    shader->setUniform1i("map", 0);
-    enableTexture(0, IBLTexture);
-    //glActiveTexture(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.texture->id);
+    shader->setUniform1i("skybox", 0);
+    //enableTexture(0, IBLTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+    //glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
     mesh.indexBuffer->bind();
     glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -397,9 +533,9 @@ void DemoApplication::exec()
             //updateCameraOrientation(mouse, deltaTime);
             //updateCameraPosition(keyboard, deltaTime);
 
-            rotateCameraAroundEntity(m_modelEntity, deltaTime);
         }
 
+        rotateCameraAroundEntity(m_modelEntity, deltaTime);
 
         glm::vec3 cameraFront = camera.orientation * UNIT_Z;
         glm::vec3 cameraUp = camera.orientation * UNIT_Y;
