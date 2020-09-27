@@ -53,6 +53,8 @@ private:
     std::shared_ptr<Shader> m_pipeline { nullptr };
     std::shared_ptr<Shader> m_irradiance { nullptr };
     std::shared_ptr<Shader> m_convertToCubeMap { nullptr };
+    std::shared_ptr<Shader> m_filterMap { nullptr };
+    std::shared_ptr<Shader> m_brdfLut { nullptr };
     std::shared_ptr<DebugDraw> m_debugDraw { nullptr };
     std::vector<Marker> m_markers;
 };

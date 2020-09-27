@@ -10,6 +10,7 @@ public:
     enum ShapeTypes
     {
         CUBE = 0,
+        QUAD,
         SPHERE,
         TRIANGLE,
         NUM_SHAPES

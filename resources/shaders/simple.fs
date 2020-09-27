@@ -15,7 +15,9 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D occlusionMap;
 uniform sampler2D emissiveMap;
+uniform sampler2D brdfLut;
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
 
 struct Material
 {
@@ -125,6 +127,7 @@ void main() {
 
     vec3 diffuseColor;
     vec3 baseColor = texture(albedoMap, TexCoord).rgb * material.color;
+    //vec3 baseColor = texture(brdfLut, TexCoord).rgb;
     float perceptualRoughness = material.roughness;
     float metallic = material.metallic;
     vec3 f0 = vec3(0.04);
@@ -169,8 +172,12 @@ void main() {
 
     vec3 color = NdotL * radiance * (Fr + Fd);
 
+    vec3 specularLight = texture(prefilterMap, reflection, perceptualRoughness  * 4.0).rgb;
+    vec2 brdf = texture(brdfLut, vec2(NdotV, 1.0 - perceptualRoughness)).rg;
 
+    vec3 specular = specularLight * (specularColor * brdf.x + brdf.y);
     color += irradiance * diffuseColor;
+    color += specular;
     float ao = texture(occlusionMap, TexCoord).r;
     color += mix(color, color * ao, 1.0f);
 

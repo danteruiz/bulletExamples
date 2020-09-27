@@ -69,6 +69,39 @@ Model::Pointer buildSphere()
 }
 
 
+Model::Pointer buildQuad()
+{
+    Model::Pointer model  = std::make_shared<Model>();
+
+    Mesh mesh;
+
+    mesh.vertices = {
+        Vertex(glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec2(0.0f, 1.0f)),
+        Vertex(glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0), glm::vec2(0.0f, 0.0f)),
+        Vertex(glm::vec3(1.0, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec2(1.0f, 1.0f)),
+        Vertex(glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec2(1.0f, 0.0f))
+    };
+
+    mesh.indices = {
+        0, 1, 2,
+        1, 2, 3
+    };
+
+     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
+    layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
+    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
+    layout->setAttribute(Slots::TEXCOORD, 2, sizeof(Vertex), (unsigned int) offsetof(Vertex,texCoord));
+
+    mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
+    mesh.vertexBuffer->setLayout(layout);
+    mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
+
+    model->meshes.push_back(mesh);
+
+    return model;
+}
+
+
 Model::Pointer buildTriangle()
 {
     Model::Pointer geometry = std::make_shared<Model>();
@@ -175,6 +208,7 @@ Model::Pointer buildCube()
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
     layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
+    layout->setAttribute(Slots::TEXCOORD, 2, sizeof(Vertex), (unsigned int) offsetof(Vertex,texCoord));
 
     mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
     mesh.vertexBuffer->setLayout(layout);
@@ -190,6 +224,7 @@ BasicShapes::BasicShapes()
     m_shapes[BasicShapes::CUBE] = buildCube();
     m_shapes[BasicShapes::TRIANGLE] = buildTriangle();
     m_shapes[BasicShapes::SPHERE] = buildSphere();
+    m_shapes[BasicShapes::QUAD] = buildQuad();
 }
 
 
