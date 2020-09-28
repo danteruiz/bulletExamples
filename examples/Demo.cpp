@@ -243,12 +243,6 @@ DemoApplication::DemoApplication()
         "Failed to init glew";
     }
 
-    glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_PROGRAM_POINT_SIZE);
-	glEnable(GL_LINE_SMOOTH);
-
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
@@ -294,6 +288,7 @@ DemoApplication::DemoApplication()
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 
     glGenFramebuffers(1, &captureFBO);
@@ -409,6 +404,7 @@ DemoApplication::DemoApplication()
 
     // specular IBL
 
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     glGenTextures(1, &prefilterMap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 
@@ -420,6 +416,8 @@ DemoApplication::DemoApplication()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -613,7 +611,7 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
     vertexBuffer->getLayout()->enableAttributes();
     shader->setUniform1i("skybox", 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 
     mesh.indexBuffer->bind();
     glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -622,6 +620,12 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
 
 void DemoApplication::exec()
 {
+
+    glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_PROGRAM_POINT_SIZE);
+	glEnable(GL_LINE_SMOOTH);
     auto currentTime = std::chrono::steady_clock::now();
     auto previousTime = currentTime;
     while (!m_window->shouldClose())

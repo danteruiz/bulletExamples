@@ -121,8 +121,7 @@ void main() {
     vec3 l = normalize(light.position - vPosition);
     vec3 h = normalize(v + l);
     vec3 n = getNormal();
-    vec3 reflection = normalize(reflect(-v, n));
-    //reflection.y *= -1.0;
+    vec3 reflection = -reflect(v, n);
 
     vec3 diffuseColor;
     vec3 baseColor = texture(albedoMap, TexCoord).rgb * material.color;
@@ -172,11 +171,11 @@ void main() {
 
     vec3 color = NdotL * radiance * (Fr + Fd);
 
-    vec3 specularLight = texture(prefilterMap, reflection, perceptualRoughness  * 4.0).rgb;
-    vec2 brdf = texture(brdfLut, vec2(NdotV, 1.0 - perceptualRoughness)).rg;
+    vec3 specularLight = texture(prefilterMap, reflection, perceptualRoughness * 4.0).rgb;
+    vec2 brdf = texture(brdfLut, vec2(NdotV, perceptualRoughness)).rg;
 
     vec3 specular = specularLight * (specularColor * brdf.x + brdf.y);
-    //color += irradiance * diffuseColor;
+    color += irradiance * diffuseColor;
     color += specular;
     float ao = texture(occlusionMap, TexCoord).r;
     color += mix(color, color * ao, 1.0f);
@@ -184,9 +183,5 @@ void main() {
     vec3 emissive = texture(emissiveMap, TexCoord).rgb * 1.0;
     color += emissive;
 
-    //color = color / (color + vec3(1.0));
-    //color = color = pow(color, vec3(1.0 / 2.2));
-    //color = diffuseColor / PI;
-    //color = texture(metallicMap, TexCoord).rgb;
     FragColor = vec4(color, material.ao);
 }

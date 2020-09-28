@@ -6,7 +6,6 @@ in vec2 TexCoord;
 const uint NUM_SAMPLES = 1024u;
 const float PI = 3.1415926536;
 
-// Based omn http://byteblacksmith.com/improvements-to-the-canonical-one-liner-glsl-rand-for-opengl-es-2-0/
 float random(vec2 co)
 {
 	float a = 12.9898;
@@ -17,9 +16,8 @@ float random(vec2 co)
 	return fract(sin(sn) * c);
 }
 
-vec2 hammersley2d(uint i, uint N) 
+vec2 hammersley2d(uint i, uint N)
 {
-	// Radical inverse based on http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
 	uint bits = (i << 16u) | (i >> 16u);
 	bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
 	bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
@@ -29,26 +27,21 @@ vec2 hammersley2d(uint i, uint N)
 	return vec2(float(i) /float(N), rdi);
 }
 
-// Based on http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_slides.pdf
-vec3 importanceSample_GGX(vec2 Xi, float roughness, vec3 normal) 
+vec3 importanceSample_GGX(vec2 Xi, float roughness, vec3 normal)
 {
-	// Maps a 2D point to a hemisphere with spread based on roughness
 	float alpha = roughness * roughness;
 	float phi = 2.0 * PI * Xi.x + random(normal.xz) * 0.1;
 	float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (alpha*alpha - 1.0) * Xi.y));
 	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
 	vec3 H = vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
 
-	// Tangent space
 	vec3 up = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
 	vec3 tangentX = normalize(cross(up, normal));
 	vec3 tangentY = normalize(cross(normal, tangentX));
 
-	// Convert to world Space
 	return normalize(tangentX * H.x + tangentY * H.y + normal * H.z);
 }
 
-// Geometric Shadowing function
 float G_SchlicksmithGGX(float dotNL, float dotNV, float roughness)
 {
 	float k = (roughness * roughness) / 2.0;
@@ -59,7 +52,6 @@ float G_SchlicksmithGGX(float dotNL, float dotNV, float roughness)
 
 vec2 BRDF(float NoV, float roughness)
 {
-	// Normal always points along z-axis for the 2D lookup 
 	const vec3 N = vec3(0.0, 0.0, 1.0);
 	vec3 V = vec3(sqrt(1.0 - NoV*NoV), 0.0, NoV);
 
@@ -71,7 +63,7 @@ vec2 BRDF(float NoV, float roughness)
 
 		float dotNL = max(dot(N, L), 0.0);
 		float dotNV = max(dot(N, V), 0.0);
-		float dotVH = max(dot(V, H), 0.0); 
+		float dotVH = max(dot(V, H), 0.0);
 		float dotNH = max(dot(H, N), 0.0);
 
 		if (dotNL > 0.0) {
