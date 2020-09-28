@@ -6,11 +6,6 @@
 #include <sstream>
 #include <iostream>
 
-
-void printSource(std::string source)
-{
-    std::cout << "Compling Shader: " << source << std::endl;
-}
 Shader::Shader(std::string const &fragmentSource, std::string const &vertexSource)
 {
     std::string vertexCode;
@@ -31,9 +26,7 @@ Shader::Shader(std::string const &fragmentSource, std::string const &vertexSourc
 
     GLuint vertexShader, fragmentShader;
 
-    printSource(vertexSource);
     shader::compileShader(GL_VERTEX_SHADER, vertexCode, vertexShader, message);
-    printSource(fragmentSource);
     shader::compileShader(GL_FRAGMENT_SHADER, fragmentCode, fragmentShader, message);
     m_id = shader::buildProgram({ vertexShader, fragmentShader});
     shader::linkProgram(m_id, message);

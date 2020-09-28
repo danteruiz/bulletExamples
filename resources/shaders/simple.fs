@@ -43,7 +43,6 @@ const float PI = 3.14159265359;
 float V_SmithGGXCorrelated(float NdotL, float NdotV, float alphaG)
 {
     float alphaG2 = alphaG * alphaG ;
-    // Caution : the " NdotL *" and " NdotV *" are explicitely inversed , this is not a mistake .
     float Lambda_GGXV = NdotL * sqrt (( NdotV * alphaG2 + NdotV ) * NdotV + alphaG2 );
     float Lambda_GGXL = NdotV * sqrt (( NdotL * alphaG2 + NdotL ) * NdotL + alphaG2 );
 
@@ -78,9 +77,9 @@ float NDF(float NdotH, float roughness)
     float f = (NdotH * roughness2 - NdotH) * NdotH + 1.0;
     return roughness2 / (PI * f * f);
 }
-vec3 F_Schlick(float VdotH, vec3 f)
+vec3 F_Schlick(float VdotH, vec3 r0, vec3 f90)
 {
-    return f + (1.0 -f) * pow((1.0 - VdotH), 5.0);
+    return r0 + (f90 - r0) * pow(clamp((1.0 - VdotH), 0.0, 1.0), 5.0);
 }
 
 float ShlickGGX(float NdotV, float roughness)
@@ -122,8 +121,8 @@ void main() {
     vec3 l = normalize(light.position - vPosition);
     vec3 h = normalize(v + l);
     vec3 n = getNormal();
-    vec3 reflection = -normalize(reflect(v, n));
-    reflection.y *= -1.0;
+    vec3 reflection = normalize(reflect(-v, n));
+    //reflection.y *= -1.0;
 
     vec3 diffuseColor;
     vec3 baseColor = texture(albedoMap, TexCoord).rgb * material.color;
@@ -142,10 +141,11 @@ void main() {
 
     float alphaRoughness = perceptualRoughness * perceptualRoughness;
 
-    vec3 specularColor = mix(f0, diffuseColor, metallic);
+    vec3 specularColor = mix(f0, baseColor, metallic);
     float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
     f0 = specularColor;
     float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
+    vec3 r0 = specularColor;
     vec3 f90 = vec3(1.0) * reflectance90;
 
     float NdotL = clamp(dot(n, l), 0.001, 1.0);
@@ -162,7 +162,7 @@ void main() {
 
     float D = NDF(NdotH, perceptualRoughness);
     float G = GSmith(NdotL, NdotV, perceptualRoughness);
-    vec3 F = F_Schlick(VdotH, specularColor);
+    vec3 F = F_Schlick(VdotH, r0, f90);
 
 
     vec3 irradiance = texture(irradianceMap, n).rgb;
@@ -176,7 +176,7 @@ void main() {
     vec2 brdf = texture(brdfLut, vec2(NdotV, 1.0 - perceptualRoughness)).rg;
 
     vec3 specular = specularLight * (specularColor * brdf.x + brdf.y);
-    color += irradiance * diffuseColor;
+    //color += irradiance * diffuseColor;
     color += specular;
     float ao = texture(occlusionMap, TexCoord).r;
     color += mix(color, color * ao, 1.0f);
@@ -186,6 +186,7 @@ void main() {
 
     //color = color / (color + vec3(1.0));
     //color = color = pow(color, vec3(1.0 / 2.2));
-    //color = baseColor;
+    //color = diffuseColor / PI;
+    //color = texture(metallicMap, TexCoord).rgb;
     FragColor = vec4(color, material.ao);
 }

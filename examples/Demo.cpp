@@ -21,7 +21,6 @@
 #include <Keyboard.h>
 #include <Buffer.h>
 #include <GL/glew.h>
-#include <GL/gl.h>
 #include <BasicShapes.h>
 #include <Model.h>
 #include <Format.h>
@@ -613,10 +612,8 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
     vertexBuffer->bind();
     vertexBuffer->getLayout()->enableAttributes();
     shader->setUniform1i("skybox", 0);
-    //enableTexture(0, IBLTexture);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-    //glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
     mesh.indexBuffer->bind();
     glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
@@ -642,12 +639,12 @@ void DemoApplication::exec()
         mouse->update();
         if (!m_debugUI->focus())
         {
-            updateCameraOrientation(mouse, deltaTime);
-            updateCameraPosition(keyboard, deltaTime);
+            //updateCameraOrientation(mouse, deltaTime);
+            //updateCameraPosition(keyboard, deltaTime);
 
         }
 
-        //rotateCameraAroundEntity(m_modelEntity, deltaTime);
+        rotateCameraAroundEntity(m_modelEntity, deltaTime);
 
         glm::vec3 cameraFront = camera.orientation * UNIT_Z;
         glm::vec3 cameraUp = camera.orientation * UNIT_Y;

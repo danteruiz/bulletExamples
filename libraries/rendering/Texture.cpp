@@ -41,7 +41,6 @@ std::shared_ptr<Texture> createTextureFromGLTF(int width, int height, int compon
 {
     std::shared_ptr<Texture> texture = std::make_shared<Texture>();
     glGenTextures(1, &texture->id);
-    std::cout << "texture id: " << texture->id << std::endl;
     glBindTexture(GL_TEXTURE_2D, texture->id);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -51,7 +50,6 @@ std::shared_ptr<Texture> createTextureFromGLTF(int width, int height, int compon
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     GLenum format = GL_RGBA;
-    std::cout << "component: " << component << std::endl;
     if (component == 1) {
         format = GL_RED;
     } else if (component == 2) {

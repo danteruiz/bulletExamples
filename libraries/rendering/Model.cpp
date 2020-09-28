@@ -26,7 +26,6 @@ std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model  &model, int index,
     }
 
     tinygltf::Texture const &gltfTexture = model.textures[index];
-    std::cout << "Creating Texuture: " << name << std::endl;
     tinygltf::Image &image = model.images[gltfTexture.source];
 
     return createTextureFromGLTF(image.width, image.height, image.component, image.bits, &image.image.at(0));
@@ -91,6 +90,13 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 
         std::shared_ptr<Material> material = std::make_shared<Material>();
         tinygltf::Material const &gltfMaterial = model.materials[primitive.material];
+
+
+        for (auto ext: gltfMaterial.extensions) {
+            std::cout << ext.first << std::endl;
+        }
+
+        std::cout << gltfMaterial.alphaMode << std::endl;
 
         auto pbrMaterial = gltfMaterial.pbrMetallicRoughness;
         auto pbrBaseColor = pbrMaterial.baseColorFactor;
