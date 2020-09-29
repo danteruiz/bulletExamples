@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <Window.h>
 #include <Material.h>
+#include <Model.h>
 
 DebugUI::DebugUI(std::shared_ptr<Window> const &window)
 {
@@ -64,18 +65,15 @@ void DebugUI::show(Entity const &entity, Light &light, std::function<void()> com
 
     ImGui::Separator();
 
+    ImGui::Text("Entity");
     ImGui::Separator();
 
-    /*imgui::ListBox("Entities", &m_entityIndex, entityNames);
+    //imgui::ListBox("Entities", &m_entityIndex, entityNames);
 
     ImGui::Separator();
     ImGui::Text("Edit Entity");
 
-    Entity &entity = entities[m_entityIndex];
-    auto &material = entity.material;
-    if (!material) {
-        return;
-    }
+    auto &material = entity.model->meshes[0].material;
     auto color = material->albedo;
     float entityColor[3] = { color.x, color.y, color.z};
     ImGui::ColorEdit3("entity color", entityColor);
@@ -85,7 +83,7 @@ void DebugUI::show(Entity const &entity, Light &light, std::function<void()> com
 
     ImGui::SliderFloat("roughness", &material->roughness, 0.0f, 1.0f);
     ImGui::SliderFloat("metallic", &material->metallic, 0.0f, 1.0f);
-    ImGui::SliderFloat("ao", &material->ao, 0.0f, 1.0f);*/
+    ImGui::SliderFloat("ao", &material->ao, 0.0f, 1.0f);
     ImGui::End();
 };
 

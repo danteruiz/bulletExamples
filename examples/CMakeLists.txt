@@ -7,4 +7,5 @@ else()
   add_executable(${PROJECT_NAME} ${source_files})
 endif()
 
+target_compile_definitions(${PROJECT_NAME} PUBLIC RESOURCE_PATH="${CMAKE_SOURCE_DIR}/resources/")
 link_personal_libraries(render input core ui)

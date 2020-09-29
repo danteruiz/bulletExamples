@@ -40,6 +40,18 @@ in vec3 vPosition;
 in vec2 TexCoord;
 const float PI = 3.14159265359;
 
+
+struct PBRInfo
+{
+    vec3 baseColor;
+    vec3 albedoColor;
+    vec3 f0;
+    vec3 f90;
+    float metallic;
+    float perceptualRoughness;
+    float alphaRoughness;
+};
+
 float V_SmithGGXCorrelated(float NdotL, float NdotV, float alphaG)
 {
     float alphaG2 = alphaG * alphaG ;
@@ -74,7 +86,7 @@ float NDF(float NdotH, float roughness)
 {
     float alpha = roughness * roughness;
     float roughness2 = alpha * alpha;
-    float f = (NdotH * roughness2 - NdotH) * NdotH + 1.0;
+    float f = (NdotH * NdotH) * (roughness2 - 1.0) + 1.0;
     return roughness2 / (PI * f * f);
 }
 vec3 F_Schlick(float VdotH, vec3 r0, vec3 f90)
@@ -109,7 +121,7 @@ vec3 getNormal()
 
     vec3 N = normalize(vNormal);
     vec3 T = normalize(q1 * st2.t - q1 * st1.t);
-    vec3 B = normalize(cross(N,T));
+    vec3 B = -normalize(cross(N,T));
 
     mat3 TBN = mat3(T, B, N);
 
@@ -123,29 +135,25 @@ void main() {
     vec3 n = getNormal();
     vec3 reflection = -reflect(v, n);
 
-    vec3 diffuseColor;
-    vec3 baseColor = texture(albedoMap, TexCoord).rgb * material.color;
-    //vec3 baseColor = texture(brdfLut, TexCoord).rgb;
-    float perceptualRoughness = material.roughness;
-    float metallic = material.metallic;
     vec3 f0 = vec3(0.04);
+    PBRInfo pbrInfo;
+    pbrInfo.baseColor = texture(albedoMap, TexCoord).rgb * material.color;
+    pbrInfo.perceptualRoughness = material.roughness;
+    pbrInfo.metallic = material.metallic;
 
     vec4 mrSample = texture(metallicMap, TexCoord);
+    pbrInfo.perceptualRoughness *= mrSample.g;
+    pbrInfo.metallic *= mrSample.b;
 
-    perceptualRoughness = mrSample.g * perceptualRoughness;
-    metallic = mrSample.b * metallic;
 
-    diffuseColor = baseColor * (vec3(1.0 - f0));
-    diffuseColor *= 1.0 - metallic;
+    pbrInfo.albedoColor = pbrInfo.baseColor * (vec3(1.0) - f0);
+    pbrInfo.albedoColor *= 1.0 - pbrInfo.metallic;
+    pbrInfo.f0 = mix(f0, pbrInfo.baseColor.rgb, pbrInfo.metallic);
 
-    float alphaRoughness = perceptualRoughness * perceptualRoughness;
+    pbrInfo.alphaRoughness = pbrInfo.perceptualRoughness * pbrInfo.perceptualRoughness;
 
-    vec3 specularColor = mix(f0, baseColor, metallic);
-    float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
-    f0 = specularColor;
-    float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
-    vec3 r0 = specularColor;
-    vec3 f90 = vec3(1.0) * reflectance90;
+    float reflectance = max(max(pbrInfo.f0.r, pbrInfo.f0.g), pbrInfo.f0.b);
+    pbrInfo.f90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));
 
     float NdotL = clamp(dot(n, l), 0.001, 1.0);
     float NdotV = clamp(abs(dot(n, v)), 0.001, 1.0);
@@ -159,23 +167,23 @@ void main() {
     vec3 radiance = light.color;// * attenuation;
 
 
-    float D = NDF(NdotH, perceptualRoughness);
-    float G = GSmith(NdotL, NdotV, perceptualRoughness);
-    vec3 F = F_Schlick(VdotH, r0, f90);
+    float D = NDF(NdotH, pbrInfo.perceptualRoughness);
+    float G = GSmith(NdotL, NdotV, pbrInfo.perceptualRoughness);
+    vec3 F = F_Schlick(VdotH, pbrInfo.f0, pbrInfo.f90);
 
 
     vec3 irradiance = texture(irradianceMap, n).rgb;
-    vec3 Fd =(1.0 - F) * (diffuseColor / PI);
+    vec3 Fd =(1.0 - F) * (pbrInfo.albedoColor / PI);
     vec3 Fr = D * G * F / (4.0 * NdotL * NdotV);
 
 
     vec3 color = NdotL * radiance * (Fr + Fd);
 
-    vec3 specularLight = texture(prefilterMap, reflection, perceptualRoughness * 4.0).rgb;
-    vec2 brdf = texture(brdfLut, vec2(NdotV, perceptualRoughness)).rg;
+    vec3 specularLight = texture(prefilterMap, reflection, pbrInfo.perceptualRoughness * 4.0).rgb;
+    vec2 brdf = texture(brdfLut, vec2(NdotV, pbrInfo.perceptualRoughness)).rg;
 
-    vec3 specular = specularLight * (specularColor * brdf.x + brdf.y);
-    color += irradiance * diffuseColor;
+    vec3 specular = specularLight * (pbrInfo.f0 * brdf.x + brdf.y);
+    color += irradiance * pbrInfo.albedoColor;
     color += specular;
     float ao = texture(occlusionMap, TexCoord).r;
     color += mix(color, color * ao, 1.0f);

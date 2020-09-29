@@ -16,7 +16,6 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
-
 set(LIBRARIES_DIR ${CMAKE_SOURCE_DIR}/libraries)
 add_subdirectory(${CMAKE_SOURCE_DIR}/libraries)
 add_subdirectory(${CMAKE_SOURCE_DIR}/examples)

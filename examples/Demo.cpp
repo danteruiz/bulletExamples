@@ -32,16 +32,9 @@
 #include "DebugUI.h"
 #include "Helper.h"
 
-#ifdef __APPLE__
-static std::string shaderPath("/Users/danteruiz/code/rendering-examples/resources/shaders/");
-static std::string imagePath("/Users/danteruiz/code/rendering-examples/resources/skybox/");
-static std::string resources("/Users/danteruiz/code/rendering-examples/resources/");
-#else
-static std::string shaderPath("C:/Users/dante/code/rendering-examples/resources/shaders/");
-static std::string imagePath("C:/Users/dante/code/rendering-examples/resources/skybox/");
-static std::string resources("C:/Users/dante/code/rendering-examples/resources/");
-#endif
 
+static std::string resources = RESOURCE_PATH;
+static const std::string shaderPath = std::string(RESOURCE_PATH) + "shaders/";
 static const std::string vertexShader = shaderPath + "simple.vs";
 static const std::string fragmentShader = shaderPath + "simple.fs";
 static const std::string debugFragmentShader = shaderPath + "debug.fs";
@@ -70,16 +63,6 @@ unsigned int captureFBO, captureRBO, envCubemap, irradianceMap;
 
 
 unsigned int prefilterMap, brdfLUTTexture;
-
-std::array<std::string, 6> CUBE_MAP_IMAGES
-{
-    imagePath + "right.jpg",
-    imagePath + "left.jpg",
-    imagePath + "top.jpg",
-    imagePath + "bottom.jpg",
-    imagePath + "front.jpg",
-    imagePath + "back.jpg"
-};
 
 
 struct Camera
@@ -243,6 +226,8 @@ DemoApplication::DemoApplication()
         "Failed to init glew";
     }
 
+
+    std::cout << "PATH: " << RESOURCE_PATH << std::endl;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
@@ -256,7 +241,7 @@ DemoApplication::DemoApplication()
     m_modelEntity.model = loadModel(m_debugUI->getModelPath());
 
     // setting up skybox
-    m_skybox.texture = loadCubeMap(CUBE_MAP_IMAGES);
+    //m_skybox.texture = loadCubeMap(CUBE_MAP_IMAGES);
     m_skybox.shader = std::make_shared<Shader>(SKYBOX_FRAG, SKYBOX_VERT);
     m_skybox.model = m_basicShapes->getShape(BasicShapes::CUBE);
 

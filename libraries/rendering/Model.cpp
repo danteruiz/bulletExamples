@@ -111,6 +111,10 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         material->emissiveTexture = loadMaterialTexture(model, gltfMaterial.emissiveTexture.index, "emissive");
         material->occlusionTexture = loadMaterialTexture(model, gltfMaterial.occlusionTexture.index, "occlusion");
         material->metallicTexture = loadMaterialTexture(model, pbrMaterial.metallicRoughnessTexture.index, "metallic");
+        //std::cout << "albedo: " << material->albedo << std::endl;
+        std::cout << "ao: " << material->ao << std::endl;
+        std::cout << "roughness: " << material->roughness << std::endl;
+        std::cout << "metallic: " << material->metallic << std::endl;
 
         mesh.material = material;
     }
