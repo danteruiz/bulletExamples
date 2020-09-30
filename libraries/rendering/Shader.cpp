@@ -6,22 +6,24 @@
 #include <sstream>
 #include <iostream>
 
-Shader::Shader(std::string const &fragmentSource, std::string const &vertexSource)
+
+std::string getSourceCode(std::string const &filePath, std::string const &defines)
 {
-    std::string vertexCode;
-    std::string fragmentCode;
+    std::string sourceCode;
 
-    std::ifstream vShaderFile(vertexSource);
-    std::ifstream fShaderFile(fragmentSource);
-    std::stringstream vShaderStream, fShaderStream;
-    vShaderStream << vShaderFile.rdbuf();
-    fShaderStream << fShaderFile.rdbuf();
+    std::ifstream shaderFile(filePath);
+    std::stringstream shaderStream;
+    shaderStream << shaderFile.rdbuf();
+    shaderFile.close();
+    sourceCode = shaderStream.str();
+    sourceCode.insert(17, "\n" + defines);
+    return sourceCode;
+}
 
-    vShaderFile.close();
-    fShaderFile.close();
-    vertexCode = vShaderStream.str();
-    fragmentCode = fShaderStream.str();
-
+Shader::Shader(std::string const &fragmentSource, std::string const &vertexSource, std::string const &defines)
+{
+    std::string vertexCode = getSourceCode(vertexSource, defines);
+    std::string fragmentCode = getSourceCode(fragmentSource, defines);
     std::string message;
 
     GLuint vertexShader, fragmentShader;
@@ -40,7 +42,6 @@ void Shader::bind() const
 {
     glUseProgram(m_id);
 }
-
 
 void Shader::setUniformMat4(std::string const &name, glm::mat4 const &matrix) const
 {

@@ -35,8 +35,8 @@
 
 static std::string resources = RESOURCE_PATH;
 static const std::string shaderPath = std::string(RESOURCE_PATH) + "shaders/";
-static const std::string vertexShader = shaderPath + "simple.vs";
-static const std::string fragmentShader = shaderPath + "simple.fs";
+static const std::string vertexShader = shaderPath + "pbr.vs";
+static const std::string fragmentShader = shaderPath + "pbr.fs";
 static const std::string debugFragmentShader = shaderPath + "debug.fs";
 static const std::string debugVertexShader = shaderPath + "debug.vs";
 static const std::string SKYBOX_FRAG = shaderPath + "skybox.fs";
@@ -226,8 +226,6 @@ DemoApplication::DemoApplication()
         "Failed to init glew";
     }
 
-
-    std::cout << "PATH: " << RESOURCE_PATH << std::endl;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
@@ -238,8 +236,8 @@ DemoApplication::DemoApplication()
 
     // setting up model entity 90.0f, 180.0f
     m_modelEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 180.0f, 0.0)));
-    //m_modelEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
-    m_modelEntity.model = loadModel(m_debugUI->getModelPath());
+    m_modelEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
+    //m_modelEntity.model = loadModel(m_debugUI->getModelPath());
 
     // setting up skybox
     //m_skybox.texture = loadCubeMap(CUBE_MAP_IMAGES);
@@ -276,7 +274,6 @@ DemoApplication::DemoApplication()
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-
     glGenFramebuffers(1, &captureFBO);
     glGenRenderbuffers(1, &captureRBO);
 
@@ -284,8 +281,6 @@ DemoApplication::DemoApplication()
     glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
-
-
 
     glGenTextures(1, &envCubemap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
@@ -298,7 +293,6 @@ DemoApplication::DemoApplication()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -362,8 +356,6 @@ DemoApplication::DemoApplication()
     glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
 
-    // pbr: solve diffuse integral by convolution to create an irradiance (cube)map.
-    // -----------------------------------------------------------------------------
     m_irradiance->bind();
     m_irradiance->setUniform1i("envMap", 0);
     m_irradiance->setUniformMat4("projection", captureProjection);
@@ -393,7 +385,6 @@ DemoApplication::DemoApplication()
 
     // specular IBL
 
-    //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     glGenTextures(1, &prefilterMap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 
@@ -405,8 +396,6 @@ DemoApplication::DemoApplication()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -424,7 +413,6 @@ DemoApplication::DemoApplication()
     unsigned int maxMipLevels = 5;
     for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
     {
-        // reisze framebuffer according to mip-level size.
         unsigned int mipWidth  = 128 * std::pow(0.5, mip);
         unsigned int mipHeight = 128 * std::pow(0.5, mip);
         glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
@@ -521,12 +509,18 @@ void enableTexture(unsigned int slot, std::shared_ptr<Texture> const &texture)
 
 void renderModelEntity(RenderArgs const &renderArgs)
 {
-    auto shader = renderArgs.shader;
     auto entity = renderArgs.modelEntity;
     auto geometry = entity.model;
+
+    if (geometry == nullptr)
+    {
+        return;
+    }
+
     for (auto mesh: geometry->meshes)
     {
 
+        auto shader = mesh.shader ? mesh.shader : renderArgs.shader;
         auto material = mesh.material ? mesh.material : entity.material;
 
         shader->bind();
@@ -609,7 +603,6 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
 
 void DemoApplication::exec()
 {
-
     glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
@@ -617,6 +610,7 @@ void DemoApplication::exec()
 	glEnable(GL_LINE_SMOOTH);
     auto currentTime = std::chrono::steady_clock::now();
     auto previousTime = currentTime;
+
     while (!m_window->shouldClose())
     {
 
@@ -651,8 +645,15 @@ void DemoApplication::exec()
             m_pipeline = std::make_shared<Shader> (fragmentShader, vertexShader);
         };
 
-        auto loadNewModel = [&](std::string path) {
-            m_modelEntity.model = loadModel(path);
+        auto loadNewModel = [&](std::string path, bool useModel) {
+            m_modelEntity.model = nullptr;
+            if (useModel)
+            {
+                m_modelEntity.model = std::move(loadModel(path));
+            } else
+            {
+                m_modelEntity.model = std::move(m_basicShapes->getShape(BasicShapes::SPHERE));
+            }
         };
 
         m_debugUI->show(m_modelEntity, m_light, [&] {

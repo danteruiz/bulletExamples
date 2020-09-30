@@ -129,9 +129,6 @@ std::shared_ptr<Texture> loadIBLTexture(std::string path)
         std::cout << "Failed to load texture: " << path << std::endl;
     }
 
+    stbi_set_flip_vertically_on_load(false);
     return IBLTexture;
 }
-
-
-
-

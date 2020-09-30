@@ -90,7 +90,7 @@ float NDF(float NdotH, float roughness)
 }
 vec3 F_Schlick(float VdotH, vec3 r0, vec3 f90)
 {
-    return r0 + (1.0 - r0) * pow((1.0 - VdotH), 5.0);
+    return r0 + (f90 - r0) * pow((1.0 - VdotH), 5.0);
 }
 
 float ShlickGGX(float NdotV, float roughness)
@@ -112,6 +112,7 @@ float GSmith(float NdotL, float NdotV, float roughness)
 
 vec3 getNormal()
 {
+#ifdef HAS_NORMAL_MAP
     vec3 tangentNormal = texture(normalMap, TexCoord).rgb * 2.0 - 1.0;
     vec3 q1 = dFdx(vPosition);
     vec3 q2 = dFdy(vPosition);
@@ -123,8 +124,11 @@ vec3 getNormal()
     vec3 B = -normalize(cross(N,T));
 
     mat3 TBN = mat3(T, B, N);
-
     return normalize(TBN * tangentNormal);
+#else
+    return  normalize(vNormal);
+#endif
+
 }
 
 void main() {
@@ -136,13 +140,19 @@ void main() {
 
     vec3 f0 = vec3(0.04);
     PBRInfo pbrInfo;
+#ifdef HAS_ALBEDO_MAP
     pbrInfo.baseColor = texture(albedoMap, TexCoord).rgb * material.color;
+#else
+    pbrInfo.baseColor = material.color;
+#endif
     pbrInfo.perceptualRoughness = material.roughness;
     pbrInfo.metallic = material.metallic;
 
+#ifdef HAS_METALLIC_ROUGHNESS_MAP
     vec4 mrSample = texture(metallicMap, TexCoord);
     pbrInfo.perceptualRoughness *= mrSample.g;
     pbrInfo.metallic *= mrSample.b;
+#endif
 
 
     pbrInfo.albedoColor = pbrInfo.baseColor * (vec3(1.0) - f0);
@@ -173,7 +183,6 @@ void main() {
 
     vec3 irradiance = texture(irradianceMap, n).rgb;
     vec3 Fd =(1.0 - F) * (pbrInfo.albedoColor / PI);
-    //Fd *= 1.0 - pbrInfo.metallic;
     vec3 Fr = D * G * F / (4.0 * NdotL * NdotV);
 
 
@@ -186,14 +195,20 @@ void main() {
     color += irradiance * pbrInfo.albedoColor;
     //color += vec3(0.1) * material.color;
     color += specular;
+
+#ifdef HAS_OCCLUSION_MAP
     float ao = texture(occlusionMap, TexCoord).r;
     color += mix(color, color * ao, 1.0f);
+#endif
 
+
+#ifdef HAS_EMISSIVE_MAP
     vec3 emissive = texture(emissiveMap, TexCoord).rgb * 1.0;
     color += emissive;
+#endif
 
     //color = color / (color + vec3(1.0));
     //color = pow(color, vec3(1.0/2.2)); 
-
+    //color = emissive;//pbrInfo.baseColor;
     FragColor = vec4(color, material.ao);
 }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include "Model.h"
 #include "Material.h"
+#include "Texture.h"
 #include "Shader.h"
 #include "Format.h"
 

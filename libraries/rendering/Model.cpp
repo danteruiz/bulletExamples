@@ -18,7 +18,12 @@
 #include <vector>
 #include <string>
 
-std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model  &model, int index, std::string name)
+std::string def = "#define HAS_";
+static std::string resources = RESOURCE_PATH;
+static const std::string shaderPath = std::string(RESOURCE_PATH) + "shaders/";
+static const std::string VERTEX_SHADER = shaderPath + "pbr.vs";
+static const std::string FRAGMENT_SHADER = shaderPath + "pbr.fs";
+std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model &model, int index, std::string materialName, std::string& defines)
 {
     if (index < 0)
     {
@@ -26,8 +31,10 @@ std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model  &model, int index,
     }
 
     tinygltf::Texture const &gltfTexture = model.textures[index];
+    std::cout << "texture source: " << gltfTexture.source << std::endl;
     tinygltf::Image &image = model.images[gltfTexture.source];
 
+    defines += def + materialName + ";\n";
     return createTextureFromGLTF(image.width, image.height, image.component, image.bits, &image.image.at(0));
 }
 
@@ -35,6 +42,7 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 {
     Mesh mesh;
 
+    std::string defines;
     for (size_t i = 0; i < gltfMesh.primitives.size(); ++i)
     {
         tinygltf::Primitive primitive = gltfMesh.primitives[i];
@@ -72,7 +80,6 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 
             size_t texOffset = i * 2;
             glm::vec2 texCoord(texCoordData[texOffset + 0], texCoordData[texOffset + 1]);
-
             mesh.vertices.push_back({pos, norm, texCoord});
         }
 
@@ -93,10 +100,8 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 
 
         for (auto ext: gltfMaterial.extensions) {
-            std::cout << ext.first << std::endl;
+            std::cout << "externals" << ext.first << std::endl;
         }
-
-        std::cout << gltfMaterial.alphaMode << std::endl;
 
         auto pbrMaterial = gltfMaterial.pbrMetallicRoughness;
         auto pbrBaseColor = pbrMaterial.baseColorFactor;
@@ -106,18 +111,14 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         material->emissive = glm::vec3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
         material->roughness = (float) pbrMaterial.roughnessFactor;
         material->metallic = (float) pbrMaterial.metallicFactor;
-        material->albedoTexture = loadMaterialTexture(model, pbrMaterial.baseColorTexture.index, "albedo");
-        material->normalTexture = loadMaterialTexture(model, gltfMaterial.normalTexture.index, "normal");
-        material->emissiveTexture = loadMaterialTexture(model, gltfMaterial.emissiveTexture.index, "emissive");
-        material->occlusionTexture = loadMaterialTexture(model, gltfMaterial.occlusionTexture.index, "occlusion");
-        material->metallicTexture = loadMaterialTexture(model, pbrMaterial.metallicRoughnessTexture.index, "metallic");
-        //std::cout << "albedo: " << material->albedo << std::endl;
-        std::cout << "ao: " << material->ao << std::endl;
-        std::cout << "roughness: " << material->roughness << std::endl;
-        std::cout << "metallic: " << material->metallic << std::endl;
-
+        material->albedoTexture = loadMaterialTexture(model, pbrMaterial.baseColorTexture.index, "ALBEDO_MAP", defines);
+        material->normalTexture = loadMaterialTexture(model, gltfMaterial.normalTexture.index, "NORMAL_MAP", defines);
+        material->emissiveTexture = loadMaterialTexture(model, gltfMaterial.emissiveTexture.index, "EMISSIVE_MAP", defines);
+        material->occlusionTexture = loadMaterialTexture(model, gltfMaterial.occlusionTexture.index, "OCCLUSION_MAP", defines);
+        material->metallicTexture = loadMaterialTexture(model, pbrMaterial.metallicRoughnessTexture.index, "METALLIC_ROUGHNESS_MAP", defines);
         mesh.material = material;
     }
+
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
     layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
@@ -125,6 +126,7 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
     mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
     mesh.vertexBuffer->setLayout(layout);
     mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
+    mesh.shader = std::make_shared<Shader>(FRAGMENT_SHADER, VERTEX_SHADER, defines);
 
     return mesh;
 }
@@ -134,7 +136,6 @@ void processNode(tinygltf::Model &gltfModel, tinygltf::Node &node, std::shared_p
 {
     if ((node.mesh >= 0) && (node.mesh < gltfModel.meshes.size()))
     {
-        std::cout << "Adding mesh" << std::endl;
         model->meshes.push_back(processMesh(gltfModel, gltfModel.meshes[node.mesh]));
     }
 

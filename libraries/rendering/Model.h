@@ -9,6 +9,7 @@
 
 
 struct Material;
+class Shader;
 struct Vertex
 {
     Vertex(glm::vec3 p) : position(p) {}
@@ -27,6 +28,7 @@ struct Mesh
     Buffer::Pointer vertexBuffer;
     Buffer::Pointer indexBuffer;
     std::shared_ptr<Material>  material { nullptr };
+    std::shared_ptr<Shader> shader { nullptr };
 };
 
 

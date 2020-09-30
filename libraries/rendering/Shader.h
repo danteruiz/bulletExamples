@@ -10,7 +10,7 @@ class Shader
 {
 public:
     using Pointer = std::shared_ptr<Shader>;
-    Shader(std::string const &fragmentSource, std::string const &vertexSource);
+    Shader(std::string const &fragmentSource, std::string const &vertexSource, std::string const& defines = "");
     int getID() const { return m_id; }
 
     void bind() const;

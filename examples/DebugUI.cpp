@@ -27,7 +27,7 @@ DebugUI::~DebugUI()
     imgui::uninitialize();
 }
 
-void DebugUI::show(Entity const &entity, Light &light, std::function<void()> compileShader, std::function<void(std::string)> loadNewModel)
+void DebugUI::show(Entity const &entity, Light &light, std::function<void()> compileShader, std::function<void(std::string, bool)> loadNewModel)
 {
     m_lightColor[0] = light.color.x;
     m_lightColor[1] = light.color.y;
@@ -40,18 +40,15 @@ void DebugUI::show(Entity const &entity, Light &light, std::function<void()> com
     if (ImGui::Button("Recompile PBR Shader")) {
         compileShader();
     }
-    if (ImGui::Button("LoadModel"))
-    {
-        loadNewModel(m_path);
-    }
-
-    imgui::InputText("Enter Model Path", m_path);
 
     ImGui::Separator();
+    ImGui::Text("Camera");
+    ImGui::Separator();
+
     ImGui::Text("Light");
     ImGui::Separator();
-    ImGui::SliderFloat("ambient", &light.ambient, 0.0f, 1.0f);
-    ImGui::SliderFloat("intensity", &light.intensity, 0.0f, 6.0f);
+    //ImGui::SliderFloat("ambient", &light.ambient, 0.0f, 1.0f);
+    //ImGui::SliderFloat("intensity", &light.intensity, 0.0f, 6.0f);
     ImGui::SliderFloat("position.x", &light.position.x, -50.0f, 50.0f);
     ImGui::SliderFloat("position.y", &light.position.y, -50.0f, 50.0f);
     ImGui::SliderFloat("position.z", &light.position.z, -50.0f, 50.0f);
@@ -66,24 +63,46 @@ void DebugUI::show(Entity const &entity, Light &light, std::function<void()> com
     ImGui::Separator();
 
     ImGui::Text("Entity");
+    if (ImGui::RadioButton("Sphere Entity", !m_useModel)) {
+        m_useModel = false;
+        loadNewModel(m_path, m_useModel);
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Model Entity", m_useModel))
+    {
+        m_useModel = true;
+        loadNewModel(m_path, m_useModel);
+    }
+
+
+    if (m_useModel)
+    {
+        if (ImGui::Button("LoadModel"))
+        {
+            loadNewModel(m_path, m_useModel);
+        }
+
+        imgui::InputText("Enter Model Path", m_path);
+    } else
+    {
+    }
     ImGui::Separator();
+    ImGui::Text("Edit Entity Material");
 
-    //imgui::ListBox("Entities", &m_entityIndex, entityNames);
 
-    ImGui::Separator();
-    ImGui::Text("Edit Entity");
+    if (entity.model) {
+        auto &material = entity.model->meshes[0].material;
+        auto color = material->albedo;
+        float entityColor[3] = { color.x, color.y, color.z};
+        ImGui::ColorEdit3("entity color", entityColor);
+        material->albedo.x = entityColor[0];
+        material->albedo.y = entityColor[1];
+        material->albedo.z = entityColor[2];
 
-    auto &material = entity.model->meshes[0].material;
-    auto color = material->albedo;
-    float entityColor[3] = { color.x, color.y, color.z};
-    ImGui::ColorEdit3("entity color", entityColor);
-    material->albedo.x = entityColor[0];
-    material->albedo.y = entityColor[1];
-    material->albedo.z = entityColor[2];
-
-    ImGui::SliderFloat("roughness", &material->roughness, 0.0f, 1.0f);
-    ImGui::SliderFloat("metallic", &material->metallic, 0.0f, 1.0f);
-    ImGui::SliderFloat("ao", &material->ao, 0.0f, 1.0f);
+        ImGui::SliderFloat("roughness", &material->roughness, 0.04f, 1.0f);
+        ImGui::SliderFloat("metallic", &material->metallic, 0.0f, 1.0f);
+        ImGui::SliderFloat("ao", &material->ao, 0.0f, 1.0f);
+    }
     ImGui::End();
 };
 

@@ -14,3 +14,5 @@ target_link_libraries(render
 
 target_include_directories(render
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC RESOURCE_PATH="${CMAKE_SOURCE_DIR}/resources/")
