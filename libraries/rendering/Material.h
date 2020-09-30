@@ -27,18 +27,9 @@ struct Material
     float opacity { 1.0f };
     float ao { 1.0f };
 
-
     std::shared_ptr<Texture> albedoTexture;
     std::shared_ptr<Texture> normalTexture;
     std::shared_ptr<Texture> occlusionTexture;
     std::shared_ptr<Texture> emissiveTexture;
     std::shared_ptr<Texture> metallicTexture;
 };
-// texture map
-
-// emissive
-// albedo
-// metallic
-// roughness
-// normal
-// scattering ?

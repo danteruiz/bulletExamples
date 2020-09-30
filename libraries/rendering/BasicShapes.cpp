@@ -3,13 +3,14 @@
 #include <cmath>
 #include <iostream>
 #include "Model.h"
+#include "Material.h"
 #include "Shader.h"
 #include "Format.h"
 
 static float const  PI = 3.14159265359;
 
-static int const X_SEGMENTS = 256.0f;
-static int const Y_SEGMENTS = 256.0f;
+static int const X_SEGMENTS = 64.0f;
+static int const Y_SEGMENTS = 64.0f;
 Model::Pointer buildSphere()
 {
     Mesh mesh;
@@ -63,6 +64,8 @@ Model::Pointer buildSphere()
     mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
     mesh.vertexBuffer->setLayout(layout);
     mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
+
+    mesh.material = std::make_shared<Material>();
 
     geometry->meshes.push_back(mesh);
     return geometry;

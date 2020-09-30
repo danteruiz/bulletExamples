@@ -1,5 +1,4 @@
 #version 330 core
-
 struct Light
 {
     float intensity;
@@ -91,7 +90,7 @@ float NDF(float NdotH, float roughness)
 }
 vec3 F_Schlick(float VdotH, vec3 r0, vec3 f90)
 {
-    return r0 + (f90 - r0) * pow(clamp((1.0 - VdotH), 0.0, 1.0), 5.0);
+    return r0 + (1.0 - r0) * pow((1.0 - VdotH), 5.0);
 }
 
 float ShlickGGX(float NdotV, float roughness)
@@ -174,22 +173,27 @@ void main() {
 
     vec3 irradiance = texture(irradianceMap, n).rgb;
     vec3 Fd =(1.0 - F) * (pbrInfo.albedoColor / PI);
+    //Fd *= 1.0 - pbrInfo.metallic;
     vec3 Fr = D * G * F / (4.0 * NdotL * NdotV);
 
 
     vec3 color = NdotL * radiance * (Fr + Fd);
 
-    vec3 specularLight = texture(prefilterMap, reflection, pbrInfo.perceptualRoughness * 4.0).rgb;
+    vec3 specularLight = textureLod(prefilterMap, reflection, pbrInfo.perceptualRoughness * 4.0).rgb;
     vec2 brdf = texture(brdfLut, vec2(NdotV, pbrInfo.perceptualRoughness)).rg;
 
-    vec3 specular = specularLight * (pbrInfo.f0 * brdf.x + brdf.y);
+    vec3 specular = specularLight * (F * brdf.x + brdf.y);
     color += irradiance * pbrInfo.albedoColor;
+    //color += vec3(0.1) * material.color;
     color += specular;
     float ao = texture(occlusionMap, TexCoord).r;
     color += mix(color, color * ao, 1.0f);
 
     vec3 emissive = texture(emissiveMap, TexCoord).rgb * 1.0;
     color += emissive;
+
+    //color = color / (color + vec3(1.0));
+    //color = pow(color, vec3(1.0/2.2)); 
 
     FragColor = vec4(color, material.ao);
 }

@@ -238,6 +238,7 @@ DemoApplication::DemoApplication()
 
     // setting up model entity 90.0f, 180.0f
     m_modelEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 180.0f, 0.0)));
+    //m_modelEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
     m_modelEntity.model = loadModel(m_debugUI->getModelPath());
 
     // setting up skybox
@@ -297,7 +298,8 @@ DemoApplication::DemoApplication()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
@@ -340,6 +342,8 @@ DemoApplication::DemoApplication()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
     // irradiance map
     glGenTextures(1, &irradianceMap);
@@ -389,7 +393,7 @@ DemoApplication::DemoApplication()
 
     // specular IBL
 
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     glGenTextures(1, &prefilterMap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 
@@ -511,7 +515,7 @@ void enableTexture(unsigned int slot, std::shared_ptr<Texture> const &texture)
         enableTexture(slot, texture->id);
     } else
     {
-        std::cout << "No Texture" << std::endl;
+        //std::cout << "No Texture" << std::endl;
     }
 }
 
@@ -596,7 +600,7 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
     vertexBuffer->getLayout()->enableAttributes();
     shader->setUniform1i("skybox", 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 
     mesh.indexBuffer->bind();
     glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
