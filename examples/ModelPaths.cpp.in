@@ -1,0 +1,23 @@
+#inlcude "ModelPaths.h"
+
+namespace gltfModels
+{
+    std::vector<std::string>& getModelPaths() {
+        static const std::vector<std::string> modelPaths = {
+            @MODEL_PATHS@
+        };
+
+        return modelPaths;
+    }
+
+
+    std::vector<std::string>& getModelNames() {
+        static const std::vector<std::string> modelNames = {
+            @MODEL_NAMES@
+        };
+
+        return modelNames;
+    }
+}
+
+

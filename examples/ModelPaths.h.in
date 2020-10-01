@@ -1,0 +1,16 @@
+#pragma once
+
+#include <string>
+#include <vector>
+namespace gltfModels
+{
+    enum Models
+    {
+        @GLTF_MODEL_NAMES@
+        NUM_MODELS
+    };
+
+
+    std::vector<std::string>& getModelPaths();
+    std::vector<std::string>& getModelNames();
+}

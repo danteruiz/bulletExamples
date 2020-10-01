@@ -1,8 +1,15 @@
 project(rendering-examples)
 cmake_minimum_required(VERSION 3.11)
 
+
+
+message("GLTF_MODEL_PATH=${GLTF_MODEL_PATH}")
+if ("${GLTF_MODEL_PATH}" STREQUAL "")
+  message(FATAL_ERROR "GLTF_MODEL_PATH is not set")
+endif()
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/macros/LinkPersonalLibraries.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/macros/GenerateModelPaths.cmake)
 conan_add_remote(NAME bincrafters INDEX 1
   URL https://api.bintray.com/conan/bincrafters/public-conan)
 conan_cmake_run(CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS
