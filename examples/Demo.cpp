@@ -257,7 +257,7 @@ DemoApplication::DemoApplication()
     m_light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 
 
-    std::cout << "-> " << gltfModels::getModelNames()[gltfModels::Buggy] << std::endl;
+    std::cout << "-> " << gltfModels::getModelName(gltfModels::Buggy) << std::endl;
     mouse = std::make_shared<Mouse>(InputDevice::MOUSE);
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
 
@@ -629,12 +629,12 @@ void DemoApplication::exec()
         mouse->update();
         if (!m_debugUI->focus())
         {
-            //updateCameraOrientation(mouse, deltaTime);
-            //updateCameraPosition(keyboard, deltaTime);
+            updateCameraOrientation(mouse, deltaTime);
+            updateCameraPosition(keyboard, deltaTime);
 
         }
 
-        rotateCameraAroundEntity(m_modelEntity, deltaTime);
+        //rotateCameraAroundEntity(m_modelEntity, deltaTime);
 
         glm::vec3 cameraFront = camera.orientation * UNIT_Z;
         glm::vec3 cameraUp = camera.orientation * UNIT_Y;

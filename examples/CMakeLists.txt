@@ -1,5 +1,7 @@
 project(demo)
 set(TARGET_NAME demo)
+
+generate_model_paths()
 file(GLOB source_files "*.h" "*.cpp"
   "${CMAKE_CURRENT_BINARY_DIR}/src/*.cpp" "${CMAKE_CURRENT_BINARY_DIR}/src/*.h")
 
@@ -9,8 +11,6 @@ if (MSVC)
 else()
   add_executable(${PROJECT_NAME} ${source_files})
 endif()
-
-generate_model_paths()
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC RESOURCE_PATH="${CMAKE_SOURCE_DIR}/resources/")
 link_personal_libraries(render input core ui)

@@ -11,6 +11,7 @@ namespace gltfModels
     };
 
 
-    std::vector<std::string>& getModelPaths();
-    std::vector<std::string>& getModelNames();
+    std::string getModelPath(int modelIndex);
+    std::string getModelName(int modelIndex);
+    std::vector<std::string> getModelNames();
 }

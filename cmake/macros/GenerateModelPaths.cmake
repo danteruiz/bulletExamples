@@ -15,8 +15,11 @@ macro(GENERATE_MODEL_PATHS)
     endif()
   endforeach()
 
-  #message("${MODEL_PATHS}")
-  #message("${CMAKE_CURRENT_SOURCE_DIR}")
+
+  string(REGEX REPLACE "\\\\" "/" MODEL_PATHS ${MODEL_PATHS})
+  message("${MODEL_PATHS}")
+
+  string(REGEX REPLACE "^[0-9]" "" GLTF_MODEL_NAMES ${GLTF_MODEL_NAMES})
   configure_file(ModelPaths.h.in src/ModelPaths.h)
   configure_file(ModelPaths.cpp.in src/ModelPaths.cpp)
 endmacro()

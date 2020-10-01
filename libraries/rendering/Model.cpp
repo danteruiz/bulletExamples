@@ -96,26 +96,32 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         // materials
 
         std::shared_ptr<Material> material = std::make_shared<Material>();
-        tinygltf::Material const &gltfMaterial = model.materials[primitive.material];
+
+        //std::cout << "Material index: " << primitive.material << " - size: " << model.materials.size() << std::endl;
+
+        if (primitive.material >= 0)
+        {
+            tinygltf::Material const &gltfMaterial = model.materials[primitive.material];
 
 
-        for (auto ext: gltfMaterial.extensions) {
-            std::cout << "externals" << ext.first << std::endl;
+            for (auto ext: gltfMaterial.extensions) {
+                std::cout << "externals" << ext.first << std::endl;
+            }
+
+            auto pbrMaterial = gltfMaterial.pbrMetallicRoughness;
+            auto pbrBaseColor = pbrMaterial.baseColorFactor;
+            material->albedo = glm::vec3(pbrBaseColor[0], pbrBaseColor[1], pbrBaseColor[2]);
+            material->ao = (float) pbrBaseColor[3];
+            auto emissiveFactor = gltfMaterial.emissiveFactor;
+            material->emissive = glm::vec3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
+            material->roughness = (float) pbrMaterial.roughnessFactor;
+            material->metallic = (float) pbrMaterial.metallicFactor;
+            material->albedoTexture = loadMaterialTexture(model, pbrMaterial.baseColorTexture.index, "ALBEDO_MAP", defines);
+            material->normalTexture = loadMaterialTexture(model, gltfMaterial.normalTexture.index, "NORMAL_MAP", defines);
+            material->emissiveTexture = loadMaterialTexture(model, gltfMaterial.emissiveTexture.index, "EMISSIVE_MAP", defines);
+            material->occlusionTexture = loadMaterialTexture(model, gltfMaterial.occlusionTexture.index, "OCCLUSION_MAP", defines);
+            material->metallicTexture = loadMaterialTexture(model, pbrMaterial.metallicRoughnessTexture.index, "METALLIC_ROUGHNESS_MAP", defines);
         }
-
-        auto pbrMaterial = gltfMaterial.pbrMetallicRoughness;
-        auto pbrBaseColor = pbrMaterial.baseColorFactor;
-        material->albedo = glm::vec3(pbrBaseColor[0], pbrBaseColor[1], pbrBaseColor[2]);
-        material->ao = (float) pbrBaseColor[3];
-        auto emissiveFactor = gltfMaterial.emissiveFactor;
-        material->emissive = glm::vec3(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2]);
-        material->roughness = (float) pbrMaterial.roughnessFactor;
-        material->metallic = (float) pbrMaterial.metallicFactor;
-        material->albedoTexture = loadMaterialTexture(model, pbrMaterial.baseColorTexture.index, "ALBEDO_MAP", defines);
-        material->normalTexture = loadMaterialTexture(model, gltfMaterial.normalTexture.index, "NORMAL_MAP", defines);
-        material->emissiveTexture = loadMaterialTexture(model, gltfMaterial.emissiveTexture.index, "EMISSIVE_MAP", defines);
-        material->occlusionTexture = loadMaterialTexture(model, gltfMaterial.occlusionTexture.index, "OCCLUSION_MAP", defines);
-        material->metallicTexture = loadMaterialTexture(model, pbrMaterial.metallicRoughnessTexture.index, "METALLIC_ROUGHNESS_MAP", defines);
         mesh.material = material;
     }
 

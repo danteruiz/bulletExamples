@@ -45,6 +45,11 @@ namespace imgui
         return ImGui::ListBox(name.c_str(), index, vector_getter, static_cast<void*>(&items), (int) items.size());
     }
 
+    bool Combo(std::string name, int* index, std::vector<std::string>& items)
+    {
+        return ImGui::Combo(name.c_str(), index, vector_getter, static_cast<void*>(&items), (int) items.size());
+    }
+
 
     bool InputText(std::string label, std::string& buffer)
     {

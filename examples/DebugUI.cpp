@@ -8,6 +8,7 @@
 #include <Window.h>
 #include <Material.h>
 #include <Model.h>
+#include <ModelPaths.h>
 
 DebugUI::DebugUI(std::shared_ptr<Window> const &window)
 {
@@ -27,7 +28,7 @@ DebugUI::~DebugUI()
     imgui::uninitialize();
 }
 
-void DebugUI::show(Entity const &entity, Light &light, std::function<void()> compileShader, std::function<void(std::string, bool)> loadNewModel)
+void DebugUI::show(Entity &entity, Light &light, std::function<void()> compileShader, std::function<void(std::string, bool)> loadNewModel)
 {
     m_lightColor[0] = light.color.x;
     m_lightColor[1] = light.color.y;
@@ -65,27 +66,34 @@ void DebugUI::show(Entity const &entity, Light &light, std::function<void()> com
     ImGui::Text("Entity");
     if (ImGui::RadioButton("Sphere Entity", !m_useModel)) {
         m_useModel = false;
-        loadNewModel(m_path, m_useModel);
+        loadNewModel(gltfModels::getModelPath(m_modelCurrentIndex), m_useModel);
     }
     ImGui::SameLine();
     if (ImGui::RadioButton("Model Entity", m_useModel))
     {
         m_useModel = true;
-        loadNewModel(m_path, m_useModel);
+        loadNewModel(gltfModels::getModelPath(m_modelCurrentIndex), m_useModel);
     }
 
 
     if (m_useModel)
     {
-        if (ImGui::Button("LoadModel"))
+        std::vector<std::string> modelNames = gltfModels::getModelNames();
+        if (imgui::Combo("glTF Models", &m_modelCurrentIndex, modelNames))
         {
-            loadNewModel(m_path, m_useModel);
+            loadNewModel(gltfModels::getModelPath(m_modelCurrentIndex), m_useModel);
         }
-
-        imgui::InputText("Enter Model Path", m_path);
-    } else
-    {
     }
+
+    ImGui::Separator();
+    ImGui::Text("Edit Entity Position, Scale and Rotation");
+
+    float scale = entity.scale.x;
+    ImGui::SliderFloat("Entity Scale", &scale, 0.0f, 30.0f);
+
+    entity.scale.x = scale;
+    entity.scale.y = scale;
+    entity.scale.z = scale;
     ImGui::Separator();
     ImGui::Text("Edit Entity Material");
 
