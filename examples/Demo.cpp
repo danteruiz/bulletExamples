@@ -563,7 +563,17 @@ void renderModelEntity(RenderArgs const &renderArgs)
         vertexBuffer->getLayout()->enableAttributes();
 
         mesh.indexBuffer->bind();
-        glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+
+        if (mesh.primitives.size() > 0)
+        {
+            for (auto primitive: mesh.primitives)
+            {
+                glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
+            }
+        } else {
+            glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+        }
+
     }
 }
 

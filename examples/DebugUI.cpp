@@ -86,7 +86,7 @@ void DebugUI::show(Entity &entity, Light &light, std::function<void()> compileSh
     }
 
     ImGui::Separator();
-    ImGui::Text("Edit Entity Position, Scale and Rotation");
+    ImGui::Text("Edit Entity Scale");
 
     float scale = entity.scale.x;
     ImGui::SliderFloat("Entity Scale", &scale, 0.0f, 30.0f);

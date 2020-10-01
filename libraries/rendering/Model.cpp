@@ -18,6 +18,11 @@
 #include <vector>
 #include <string>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
+
 std::string def = "#define HAS_";
 static std::string resources = RESOURCE_PATH;
 static const std::string shaderPath = std::string(RESOURCE_PATH) + "shaders/";
@@ -31,7 +36,7 @@ std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model &model, int index, 
     }
 
     tinygltf::Texture const &gltfTexture = model.textures[index];
-    std::cout << "texture source: " << gltfTexture.source << std::endl;
+    std::cout << "texture source: " << gltfTexture.source << " name: " << materialName << std::endl;
     tinygltf::Image &image = model.images[gltfTexture.source];
 
     defines += def + materialName + ";\n";
@@ -45,6 +50,11 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
     std::string defines;
     for (size_t i = 0; i < gltfMesh.primitives.size(); ++i)
     {
+
+        Primitive prim;
+        prim.indexStart = mesh.indices.size();
+        prim.vertexStart = mesh.vertices.size();
+        std::cout << "-> primitive index: " << i << std::endl;
         tinygltf::Primitive primitive = gltfMesh.primitives[i];
 
 
@@ -83,6 +93,8 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
             mesh.vertices.push_back({pos, norm, texCoord});
         }
 
+        prim.vertexCount = positionAccess.count;
+
         const tinygltf::Accessor &indexAccessor = model.accessors[primitive.indices];
         const tinygltf::BufferView &indexBufferView = model.bufferViews[indexAccessor.bufferView];
         tinygltf::Buffer &indexBuffer = model.buffers[indexBufferView.buffer];
@@ -91,14 +103,11 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         for (size_t i = 0; i < indexAccessor.count; ++i) {
             mesh.indices.push_back((int) indices[i]);
         }
-
+        prim.indexCount = indexAccessor.count;
 
         // materials
 
         std::shared_ptr<Material> material = std::make_shared<Material>();
-
-        //std::cout << "Material index: " << primitive.material << " - size: " << model.materials.size() << std::endl;
-
         if (primitive.material >= 0)
         {
             tinygltf::Material const &gltfMaterial = model.materials[primitive.material];
@@ -123,6 +132,7 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
             material->metallicTexture = loadMaterialTexture(model, pbrMaterial.metallicRoughnessTexture.index, "METALLIC_ROUGHNESS_MAP", defines);
         }
         mesh.material = material;
+        mesh.primitives.push_back(prim);
     }
 
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
@@ -142,7 +152,12 @@ void processNode(tinygltf::Model &gltfModel, tinygltf::Node &node, std::shared_p
 {
     if ((node.mesh >= 0) && (node.mesh < gltfModel.meshes.size()))
     {
-        model->meshes.push_back(processMesh(gltfModel, gltfModel.meshes[node.mesh]));
+        Mesh mesh = processMesh(gltfModel, gltfModel.meshes[node.mesh]);
+        if (node.matrix.size() == 16)
+        {
+            mesh.matrix = glm::make_mat4x4(node.matrix.data());
+        }
+        model->meshes.push_back(mesh);
     }
 
     for (size_t i = 0; i < node.children.size(); ++i)
@@ -183,6 +198,8 @@ Model::Pointer loadModel(std::string const &file)
     }
 
 
+
+    std::cout << "loading model: " << file << std::endl;
     const tinygltf::Scene &scene = model.scenes[model.defaultScene];
     for (size_t i = 0; i < scene.nodes.size(); ++i)
     {
