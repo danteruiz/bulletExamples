@@ -526,8 +526,10 @@ void renderModelEntity(RenderArgs const &renderArgs)
         auto shader = mesh.shader ? mesh.shader : renderArgs.shader;
         auto material = mesh.material ? mesh.material : entity.material;
 
+
+        glm::mat4 modelMatrix = mesh.matrix;
         shader->bind();
-        shader->setUniformMat4("model", getMatrix(entity));
+        shader->setUniformMat4("model", modelMatrix);
         shader->setUniformMat4("projection", renderArgs.projection);
         shader->setUniformMat4("view", renderArgs.view);
         shader->setUniform1f("light.intensity", renderArgs.light.intensity);

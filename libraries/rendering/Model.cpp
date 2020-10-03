@@ -18,16 +18,13 @@
 #include <vector>
 #include <string>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 std::string def = "#define HAS_";
 static std::string resources = RESOURCE_PATH;
 static const std::string shaderPath = std::string(RESOURCE_PATH) + "shaders/";
 static const std::string VERTEX_SHADER = shaderPath + "pbr.vs";
 static const std::string FRAGMENT_SHADER = shaderPath + "pbr.fs";
+
 std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model &model, int index, std::string materialName, std::string& defines)
 {
     if (index < 0)
@@ -54,7 +51,6 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
         Primitive prim;
         prim.indexStart = mesh.indices.size();
         prim.vertexStart = mesh.vertices.size();
-        std::cout << "-> primitive index: " << i << std::endl;
         tinygltf::Primitive primitive = gltfMesh.primitives[i];
 
 
@@ -148,21 +144,53 @@ Mesh processMesh(tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 }
 
 
-void processNode(tinygltf::Model &gltfModel, tinygltf::Node &node, std::shared_ptr<Model> &model)
+
+glm::mat4 calculateLocalMatrix(glm::mat4& matrix, glm::vec3& translation, glm::vec3& scale, glm::quat& rotation)
 {
+    return glm::translate(glm::mat4(1.0f), translation) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale) * matrix;
+}
+
+void processNode(tinygltf::Model &gltfModel, tinygltf::Node &node, std::shared_ptr<Model> &model, glm::mat4 parentMatrix = glm::mat4(1.0f))
+{
+    glm::mat4 finalMatrix;
+
+    glm::mat4 matrix(1.0f);
+    if (node.matrix.size() == 16)
+    {
+        matrix = glm::make_mat4x4(node.matrix.data());
+    }
+
+    glm::vec3 translation(1.0f);
+    if (node.translation.size() == 3)
+    {
+        translation = glm::make_vec3(node.translation.data());
+    }
+
+    glm::quat rotation;
+    if (node.rotation.size() == 4)
+    {
+        rotation = glm::make_quat(node.rotation.data());
+    }
+
+    glm::vec3 scale(1.0f);
+    if (node.scale.size() == 3)
+    {
+        scale = glm::make_vec3(node.scale.data());
+    }
+
+
+    finalMatrix = parentMatrix * calculateLocalMatrix(matrix, translation, scale, rotation);
+
     if ((node.mesh >= 0) && (node.mesh < gltfModel.meshes.size()))
     {
         Mesh mesh = processMesh(gltfModel, gltfModel.meshes[node.mesh]);
-        if (node.matrix.size() == 16)
-        {
-            mesh.matrix = glm::make_mat4x4(node.matrix.data());
-        }
+        mesh.matrix = finalMatrix;
         model->meshes.push_back(mesh);
     }
 
     for (size_t i = 0; i < node.children.size(); ++i)
     {
-        processNode(gltfModel, gltfModel.nodes[node.children[i]], model);
+        processNode(gltfModel, gltfModel.nodes[node.children[i]], model, finalMatrix);
     }
 }
 
@@ -203,6 +231,7 @@ Model::Pointer loadModel(std::string const &file)
     const tinygltf::Scene &scene = model.scenes[model.defaultScene];
     for (size_t i = 0; i < scene.nodes.size(); ++i)
     {
+        std::cout << "Node: " << i << std::endl;
         processNode(model, model.nodes[scene.nodes[i]], geometry);
     }
 

@@ -98,7 +98,7 @@ void DebugUI::show(Entity &entity, Light &light, std::function<void()> compileSh
     ImGui::Text("Edit Entity Material");
 
 
-    if (entity.model) {
+    /*if (entity.model) {
         auto &material = entity.model->meshes[0].material;
         auto color = material->albedo;
         float entityColor[3] = { color.x, color.y, color.z};
@@ -110,7 +110,7 @@ void DebugUI::show(Entity &entity, Light &light, std::function<void()> compileSh
         ImGui::SliderFloat("roughness", &material->roughness, 0.04f, 1.0f);
         ImGui::SliderFloat("metallic", &material->metallic, 0.0f, 1.0f);
         ImGui::SliderFloat("ao", &material->ao, 0.0f, 1.0f);
-    }
+        }*/
     ImGui::End();
 };
 

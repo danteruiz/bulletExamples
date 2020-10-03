@@ -5,7 +5,11 @@
 #include <string>
 #include <memory>
 
+
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 
 struct Material;
@@ -39,9 +43,12 @@ struct Mesh
     Buffer::Pointer indexBuffer;
     std::shared_ptr<Material>  material { nullptr };
     std::shared_ptr<Shader> shader { nullptr };
-    glm::mat4 matrix { glm::mat4(1.0f) };
+    glm::mat4 matrix;
 };
 
+
+
+glm::mat4 getLocalMeshMatrix(Mesh const &mesh);
 
 
 struct Model
