@@ -22,5 +22,6 @@ private:
     bool m_focus { false };
     bool m_useModel { false };
     int m_modelCurrentIndex { 0 };
+    int m_materialIndex { 0 };
     std::string m_path;
 };

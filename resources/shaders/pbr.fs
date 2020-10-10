@@ -193,7 +193,6 @@ void main() {
 
     vec3 specular = specularLight * (F * brdf.x + brdf.y);
     color += irradiance * pbrInfo.albedoColor;
-    //color += vec3(0.1) * material.color;
     color += specular;
 
 #ifdef HAS_OCCLUSION_MAP
@@ -206,9 +205,5 @@ void main() {
     vec3 emissive = texture(emissiveMap, TexCoord).rgb * 1.0;
     color += emissive;
 #endif
-
-    //color = color / (color + vec3(1.0));
-    //color = pow(color, vec3(1.0/2.2)); 
-    //color = emissive;//pbrInfo.baseColor;
     FragColor = vec4(color, material.ao);
 }

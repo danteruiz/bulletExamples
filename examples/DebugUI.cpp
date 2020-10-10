@@ -95,11 +95,21 @@ void DebugUI::show(Entity &entity, Light &light, std::function<void()> compileSh
     entity.scale.y = scale;
     entity.scale.z = scale;
     ImGui::Separator();
-    ImGui::Text("Edit Entity Material");
+    ImGui::Text("Edit Entity Materials");
 
 
-    /*if (entity.model) {
-        auto &material = entity.model->meshes[0].material;
+    std::vector<std::string> modelNames = gltfModels::getModelNames();
+    if (entity.model) {
+        std::vector<std::string> materialNames;
+
+        for (auto& entry : entity.model->materials)
+        {
+            materialNames.push_back(entry.first);
+        }
+
+        imgui::Combo("material list", &m_materialIndex, materialNames);
+
+        auto &material = std::get<0>(entity.model->materials[materialNames[m_materialIndex]]);
         auto color = material->albedo;
         float entityColor[3] = { color.x, color.y, color.z};
         ImGui::ColorEdit3("entity color", entityColor);
@@ -110,7 +120,7 @@ void DebugUI::show(Entity &entity, Light &light, std::function<void()> compileSh
         ImGui::SliderFloat("roughness", &material->roughness, 0.04f, 1.0f);
         ImGui::SliderFloat("metallic", &material->metallic, 0.0f, 1.0f);
         ImGui::SliderFloat("ao", &material->ao, 0.0f, 1.0f);
-        }*/
+    }
     ImGui::End();
 };
 

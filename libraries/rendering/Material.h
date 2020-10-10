@@ -15,7 +15,6 @@ struct Material
         OCCLUSION_MAP,
         EMISSIVE_MAP,
         METALLIC_MAP,
-
         NUM_FLAGS
     };
 

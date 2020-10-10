@@ -66,7 +66,7 @@ Model::Pointer buildSphere()
     mesh.vertexBuffer->setLayout(layout);
     mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
 
-    mesh.material = std::make_shared<Material>();
+    //geometry->materials["default"] = std::make_shared<Material>();
 
     geometry->meshes.push_back(mesh);
     return geometry;

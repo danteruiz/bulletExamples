@@ -4,6 +4,9 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_map>
+#include <tuple>
+#include <inttypes.h>
 
 
 #include <glm/glm.hpp>
@@ -28,10 +31,11 @@ struct Vertex
 
 struct Primitive
 {
-    unsigned int indexStart;
-    unsigned int vertexStart;
-    unsigned int indexCount;
-    unsigned int vertexCount;
+    uint32_t indexStart;
+    uint32_t vertexStart;
+    uint32_t indexCount;
+    uint32_t vertexCount;
+    std::string materialName;
 };
 
 struct Mesh
@@ -41,8 +45,6 @@ struct Mesh
     std::vector<int> indices;
     Buffer::Pointer vertexBuffer;
     Buffer::Pointer indexBuffer;
-    std::shared_ptr<Material>  material { nullptr };
-    std::shared_ptr<Shader> shader { nullptr };
     glm::mat4 matrix;
 };
 
@@ -55,6 +57,12 @@ struct Model
 {
     using Pointer = std::shared_ptr<Model>;
     std::vector<Mesh> meshes;
+
+    std::vector<Vertex> vertices;
+    std::vector<uint32_t> indices;
+    Buffer::Pointer vertexBuffer;
+    Buffer::Pointer indexBuffer;
+    std::unordered_map<std::string, std::tuple<std::shared_ptr<Material>, std::shared_ptr<Shader>>> materials;
 };
 
 Model::Pointer loadModel(std::string const &file);

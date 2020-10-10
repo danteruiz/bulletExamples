@@ -237,8 +237,8 @@ DemoApplication::DemoApplication()
 
     // setting up model entity 90.0f, 180.0f
     m_modelEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 180.0f, 0.0)));
-    m_modelEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
-    //m_modelEntity.model = loadModel(m_debugUI->getModelPath());
+    //m_modelEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
+    m_modelEntity.model = loadModel(m_debugUI->getModelPath());
 
     // setting up skybox
     //m_skybox.texture = loadCubeMap(CUBE_MAP_IMAGES);
@@ -520,60 +520,60 @@ void renderModelEntity(RenderArgs const &renderArgs)
         return;
     }
 
+
+    auto vertexBuffer = geometry->vertexBuffer;
+    vertexBuffer->bind();
+    vertexBuffer->getLayout()->enableAttributes();
+    geometry->indexBuffer->bind();
+
+    glm::mat4 entityMatrix = getMatrix(entity);
     for (auto mesh: geometry->meshes)
     {
-
-        auto shader = mesh.shader ? mesh.shader : renderArgs.shader;
-        auto material = mesh.material ? mesh.material : entity.material;
-
-
-        glm::mat4 modelMatrix = mesh.matrix;
-        shader->bind();
-        shader->setUniformMat4("model", modelMatrix);
-        shader->setUniformMat4("projection", renderArgs.projection);
-        shader->setUniformMat4("view", renderArgs.view);
-        shader->setUniform1f("light.intensity", renderArgs.light.intensity);
-        shader->setUniform1f("light.ambient", renderArgs.light.ambient);
-        shader->setUniformVec3("light.color", renderArgs.light.color);
-        shader->setUniformVec3("light.position", renderArgs.light.position);
-        shader->setUniformVec3("cameraPosition", camera.position);
-        shader->setUniformVec3("material.color", material->albedo);
-        shader->setUniform1f("material.roughness", material->roughness);
-        shader->setUniform1f("material.metallic", material->metallic);
-        shader->setUniform1f("material.ao", material->ao);
-        shader->setUniform1i("albedoMap", 0);
-        shader->setUniform1i("normalMap", 1);
-        shader->setUniform1i("metallicMap", 2);
-        shader->setUniform1i("occlusionMap", 3);
-        shader->setUniform1i("emissiveMap", 4);
-        shader->setUniform1i("brdfLut", 5);
-        shader->setUniform1i("irradianceMap", 6);
-        shader->setUniform1i("prefilterMap", 7);
-
-
-        enableTexture(0, material->albedoTexture);
-        enableTexture(1, material->normalTexture);
-        enableTexture(2, material->metallicTexture);
-        enableTexture(3, material->occlusionTexture);
-        enableTexture(4, material->emissiveTexture);
-        enableTexture(5, brdfLUTTexture);
-        enableCubeTexture(6, irradianceMap);
-        enableCubeTexture(7, prefilterMap);
-
-        auto vertexBuffer = mesh.vertexBuffer;
-        vertexBuffer->bind();
-        vertexBuffer->getLayout()->enableAttributes();
-
-        mesh.indexBuffer->bind();
+        glm::mat4 modelMatrix = entityMatrix * mesh.matrix;
 
         if (mesh.primitives.size() > 0)
         {
             for (auto primitive: mesh.primitives)
             {
-                glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
+                auto& tuple = geometry->materials[primitive.materialName];
+                auto& shader = std::get<1>(tuple);
+                auto& material = std::get<0>(tuple);
+                shader->bind();
+                shader->setUniformMat4("model", mesh.matrix);
+                shader->setUniformMat4("projection", renderArgs.projection);
+                shader->setUniformMat4("view", renderArgs.view);
+                shader->setUniform1f("light.intensity", renderArgs.light.intensity);
+                shader->setUniform1f("light.ambient", renderArgs.light.ambient);
+                shader->setUniformVec3("light.color", renderArgs.light.color);
+                shader->setUniformVec3("light.position", renderArgs.light.position);
+                shader->setUniformVec3("cameraPosition", camera.position);
+                shader->setUniformVec3("material.color", material->albedo);
+                shader->setUniform1f("material.roughness", material->roughness);
+                shader->setUniform1f("material.metallic", material->metallic);
+                shader->setUniform1f("material.ao", material->ao);
+                shader->setUniform1i("albedoMap", 0);
+                shader->setUniform1i("normalMap", 1);
+                shader->setUniform1i("metallicMap", 2);
+                shader->setUniform1i("occlusionMap", 3);
+                shader->setUniform1i("emissiveMap", 4);
+                shader->setUniform1i("brdfLut", 5);
+                shader->setUniform1i("irradianceMap", 6);
+                shader->setUniform1i("prefilterMap", 7);
+
+
+                enableTexture(0, material->albedoTexture);
+                enableTexture(1, material->normalTexture);
+                enableTexture(2, material->metallicTexture);
+                enableTexture(3, material->occlusionTexture);
+                enableTexture(4, material->emissiveTexture);
+                enableTexture(5, brdfLUTTexture);
+                enableCubeTexture(6, irradianceMap);
+                enableCubeTexture(7, prefilterMap);
+
+                glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(uint32_t)));
             }
         } else {
-            glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+            //glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
         }
 
     }
