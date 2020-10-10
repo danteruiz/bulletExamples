@@ -16,6 +16,6 @@ void Layout::enableAttributes() const
         glEnableVertexAttribArray(attribute.slot);
         glVertexAttribPointer(attribute.slot, attribute.count,
                               GL_FLOAT, GL_FALSE, attribute.stride,
-                              (void*) attribute.offset);
+                              (void*)attribute.offset);
     }
 }

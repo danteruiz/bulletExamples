@@ -33,7 +33,6 @@ std::shared_ptr<Texture> loadMaterialTexture(tinygltf::Model &model, int index, 
     }
 
     tinygltf::Texture const &gltfTexture = model.textures[index];
-    std::cout << "texture source: " << gltfTexture.source << " name: " << materialName << std::endl;
     tinygltf::Image &image = model.images[gltfTexture.source];
 
     defines += def + materialName + ";\n";
@@ -56,8 +55,9 @@ Mesh processMesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices, 
     {
 
         Primitive prim;
-        prim.indexStart = static_cast<uint32_t>(mesh.indices.size());
-        prim.vertexStart = static_cast<uint32_t>(mesh.vertices.size());
+        prim.indexStart = static_cast<uint32_t>(indices.size());
+        prim.vertexStart = static_cast<uint32_t>(vertices.size());
+        //std::cout << "vertex start: " << prim.vertexStart << std::endl;
         tinygltf::Primitive primitive = gltfMesh.primitives[i];
 
 
@@ -102,13 +102,8 @@ Mesh processMesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices, 
         const tinygltf::BufferView &indexBufferView = model.bufferViews[indexAccessor.bufferView];
         tinygltf::Buffer &indexBuffer = model.buffers[indexBufferView.buffer];
 
-
-
-        std::cout << "index type: " << indexAccessor.componentType << std::endl;
-
         void* const  indexData = &indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset];
-        unsigned short* gltfIndices = reinterpret_cast<unsigned short*>(&indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset]);
-
+        //std::cout << "number of indices: " << indexAccessor.count << std::endl;
         switch (indexAccessor.componentType)
         {
             case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
@@ -122,6 +117,10 @@ Mesh processMesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices, 
             case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
                 processIndexData<uint32_t>(reinterpret_cast<uint32_t*>(indexData), indices, indexAccessor.count, prim.vertexStart);
                 break;
+
+            case TINYGLTF_COMPONENT_TYPE_FLOAT:
+            case TINYGLTF_COMPONENT_TYPE_INT:
+                processIndexData<int32_t>(reinterpret_cast<int32_t*>(indexData), indices, indexAccessor.count, prim.vertexStart);
 
             default:
                 std::cout << "UNSUPPORTED TYPE: " << indexAccessor.componentType << std::endl;
@@ -172,7 +171,7 @@ void processNode(tinygltf::Model &gltfModel, tinygltf::Node &node, std::shared_p
 
     finalMatrix = parentMatrix * calculateLocalMatrix(matrix, translation, scale, rotation);
 
-    if ((node.mesh >= 0) && (node.mesh < gltfModel.meshes.size()))
+    if ((node.mesh >= 0) && (node.mesh < (int) gltfModel.meshes.size()))
     {
         Mesh mesh = processMesh(model->vertices, model->indices, gltfModel, gltfModel.meshes[node.mesh]);
         mesh.matrix = finalMatrix;
@@ -246,7 +245,6 @@ Model::Pointer loadModel(std::string const &file)
     const tinygltf::Scene &scene = model.scenes[model.defaultScene];
     for (size_t i = 0; i < scene.nodes.size(); ++i)
     {
-        std::cout << "Node: " << i << std::endl;
         processNode(model, model.nodes[scene.nodes[i]], geometry);
     }
 
@@ -257,9 +255,9 @@ Model::Pointer loadModel(std::string const &file)
     layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
     layout->setAttribute(Slots::TEXCOORD, 2, sizeof(Vertex), (unsigned int) offsetof(Vertex, texCoord));
     auto& vertices = geometry->vertices;
-    auto indices = geometry->indices;
+    auto& indices = geometry->indices;
     geometry->vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, vertices.size() * sizeof(Vertex), vertices.size(), vertices.data());
-    geometry->indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, indices.size() * sizeof(unsigned short), indices.size(), indices.data());
+    geometry->indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, indices.size() * sizeof(uint32_t), indices.size(), indices.data());
     geometry->vertexBuffer->setLayout(layout);
 
     return geometry;

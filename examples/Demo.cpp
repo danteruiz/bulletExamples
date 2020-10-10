@@ -539,7 +539,7 @@ void renderModelEntity(RenderArgs const &renderArgs)
                 auto& shader = std::get<1>(tuple);
                 auto& material = std::get<0>(tuple);
                 shader->bind();
-                shader->setUniformMat4("model", mesh.matrix);
+                shader->setUniformMat4("model", modelMatrix);
                 shader->setUniformMat4("projection", renderArgs.projection);
                 shader->setUniformMat4("view", renderArgs.view);
                 shader->setUniform1f("light.intensity", renderArgs.light.intensity);
@@ -570,7 +570,7 @@ void renderModelEntity(RenderArgs const &renderArgs)
                 enableCubeTexture(6, irradianceMap);
                 enableCubeTexture(7, prefilterMap);
 
-                glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(uint32_t)));
+                glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
             }
         } else {
             //glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
