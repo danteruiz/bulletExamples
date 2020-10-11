@@ -98,34 +98,36 @@ Mesh processMesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices, 
 
         prim.vertexCount = static_cast<uint32_t>(positionAccess.count);
 
-        const tinygltf::Accessor &indexAccessor = model.accessors[primitive.indices];
-        const tinygltf::BufferView &indexBufferView = model.bufferViews[indexAccessor.bufferView];
-        tinygltf::Buffer &indexBuffer = model.buffers[indexBufferView.buffer];
 
-        void* const  indexData = &indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset];
-        //std::cout << "number of indices: " << indexAccessor.count << std::endl;
-        switch (indexAccessor.componentType)
+        if (primitive.indices >= 0)
         {
-            case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
-                processIndexData<uint8_t>(reinterpret_cast<uint8_t*>(indexData), indices, indexAccessor.count, prim.vertexStart);
-                break;
+            const tinygltf::Accessor &indexAccessor = model.accessors[primitive.indices];
+            const tinygltf::BufferView &indexBufferView = model.bufferViews[indexAccessor.bufferView];
+            tinygltf::Buffer &indexBuffer = model.buffers[indexBufferView.buffer];
 
-            case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
-                processIndexData<uint16_t>(reinterpret_cast<uint16_t*>(indexData), indices, indexAccessor.count, prim.vertexStart);
-                break;
+            void* const  indexData = &indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset];
+            //std::cout << "number of indices: " << indexAccessor.count << std::endl;
+            switch (indexAccessor.componentType)
+            {
+                case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
+                    processIndexData<uint8_t>(reinterpret_cast<uint8_t*>(indexData), indices, indexAccessor.count, prim.vertexStart);
+                    break;
 
-            case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
-                processIndexData<uint32_t>(reinterpret_cast<uint32_t*>(indexData), indices, indexAccessor.count, prim.vertexStart);
-                break;
+                case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
+                    processIndexData<uint16_t>(reinterpret_cast<uint16_t*>(indexData), indices, indexAccessor.count, prim.vertexStart);
+                    break;
 
-            case TINYGLTF_COMPONENT_TYPE_FLOAT:
-            case TINYGLTF_COMPONENT_TYPE_INT:
-                processIndexData<int32_t>(reinterpret_cast<int32_t*>(indexData), indices, indexAccessor.count, prim.vertexStart);
+                case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
+                case TINYGLTF_COMPONENT_TYPE_FLOAT:
+                case TINYGLTF_COMPONENT_TYPE_INT:
+                    processIndexData<uint32_t>(reinterpret_cast<uint32_t*>(indexData), indices, indexAccessor.count, prim.vertexStart);
+                    break;
 
-            default:
-                std::cout << "UNSUPPORTED TYPE: " << indexAccessor.componentType << std::endl;
+                default:
+                    std::cout << "UNSUPPORTED TYPE: " << indexAccessor.componentType << std::endl;
+            }
+            prim.indexCount = static_cast<uint32_t>(indexAccessor.count);
         }
-        prim.indexCount = static_cast<uint32_t>(indexAccessor.count);
         prim.materialName = model.materials[primitive.material].name;
         mesh.primitives.push_back(prim);
     }
@@ -216,7 +218,6 @@ void getShadersAndMaterials(std::shared_ptr<Model>& model, tinygltf::Model gltfM
 
 Model::Pointer loadModel(std::string const &file)
 {
-    Model::Pointer geometry = std::make_shared<Model>();
 
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -239,9 +240,11 @@ Model::Pointer loadModel(std::string const &file)
     if (!ret)
     {
         std::cout << "Failed to parse GlTF" << std::endl;
-        return geometry;
+        return nullptr;
     }
 
+
+    Model::Pointer geometry = std::make_shared<Model>();
     const tinygltf::Scene &scene = model.scenes[model.defaultScene];
     for (size_t i = 0; i < scene.nodes.size(); ++i)
     {
@@ -256,8 +259,13 @@ Model::Pointer loadModel(std::string const &file)
     layout->setAttribute(Slots::TEXCOORD, 2, sizeof(Vertex), (unsigned int) offsetof(Vertex, texCoord));
     auto& vertices = geometry->vertices;
     auto& indices = geometry->indices;
+
     geometry->vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, vertices.size() * sizeof(Vertex), vertices.size(), vertices.data());
-    geometry->indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, indices.size() * sizeof(uint32_t), indices.size(), indices.data());
+    geometry->hasIndexBuffer = (indices.size() > 0);
+    if (geometry->hasIndexBuffer)
+    {
+        geometry->indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, indices.size() * sizeof(uint32_t), indices.size(), indices.data());
+    }
     geometry->vertexBuffer->setLayout(layout);
 
     return geometry;

@@ -524,7 +524,10 @@ void renderModelEntity(RenderArgs const &renderArgs)
     auto vertexBuffer = geometry->vertexBuffer;
     vertexBuffer->bind();
     vertexBuffer->getLayout()->enableAttributes();
-    geometry->indexBuffer->bind();
+    if (geometry->hasIndexBuffer)
+    {
+        geometry->indexBuffer->bind();
+    }
 
     glm::mat4 entityMatrix = getMatrix(entity);
     for (auto mesh: geometry->meshes)
@@ -570,7 +573,13 @@ void renderModelEntity(RenderArgs const &renderArgs)
                 enableCubeTexture(6, irradianceMap);
                 enableCubeTexture(7, prefilterMap);
 
-                glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
+                if(geometry->hasIndexBuffer)
+                {
+                    glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
+                } else
+                {
+                    glDrawArrays(GL_TRIANGLES, 0, geometry->vertices.size());
+                }
             }
         } else {
             //glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);

@@ -62,6 +62,7 @@ struct Model
     std::vector<uint32_t> indices;
     Buffer::Pointer vertexBuffer;
     Buffer::Pointer indexBuffer;
+    bool hasIndexBuffer { false };
     std::unordered_map<std::string, std::tuple<std::shared_ptr<Material>, std::shared_ptr<Shader>>> materials;
 };
 
