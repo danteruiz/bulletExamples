@@ -152,7 +152,7 @@ void processNode(tinygltf::Model &gltfModel, tinygltf::Node &node, std::shared_p
         matrix = glm::make_mat4x4(node.matrix.data());
     }
 
-    glm::vec3 translation(1.0f);
+    glm::vec3 translation(0.0f);
     if (node.translation.size() == 3)
     {
         translation = glm::make_vec3(node.translation.data());

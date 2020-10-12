@@ -3,10 +3,8 @@ cmake_minimum_required(VERSION 3.11)
 
 
 
+set(GLTF_MODEL_PATH "${CMAKE_SOURCE_DIR}/resources/glTF-models/")
 message("GLTF_MODEL_PATH=${GLTF_MODEL_PATH}")
-if ("${GLTF_MODEL_PATH}" STREQUAL "")
-  message(FATAL_ERROR "GLTF_MODEL_PATH is not set")
-endif()
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/macros/LinkPersonalLibraries.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/macros/GenerateModelPaths.cmake)

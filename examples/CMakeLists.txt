@@ -1,5 +1,5 @@
-project(demo)
-set(TARGET_NAME demo)
+project(PbrViewer)
+set(TARGET_NAME PbrViewer)
 
 generate_model_paths()
 file(GLOB source_files "*.h" "*.cpp"
@@ -14,5 +14,5 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC RESOURCE_PATH="${CMAKE_SOURCE_DIR}/resources/")
 link_personal_libraries(render input core ui)
-target_include_directories(demo
+target_include_directories(${TARGET_NAME}
   PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)

@@ -256,8 +256,6 @@ DemoApplication::DemoApplication()
     m_light.intensity = 0.9f;
     m_light.color = glm::vec3(1.0f, 1.0f, 1.0f);
 
-
-    std::cout << "-> " << gltfModels::getModelName(gltfModels::Buggy) << std::endl;
     mouse = std::make_shared<Mouse>(InputDevice::MOUSE);
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
 
