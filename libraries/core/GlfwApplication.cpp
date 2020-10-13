@@ -21,14 +21,13 @@ GlfwApplication::GlfwApplication() {
     {
         std::cout << "THROW ERRORS: FAILED TO INITIALIZE GLFW" << std::endl;
     }
-    std::cout << "GlfwApplication::GlfwApplication" << std::endl;
+
     if (g_application) {
         std::cout << "!!!! ERROR: INSTANCE ALREADY EXISTS" << std::endl;
     }
 
-    std::cout << "this is a test" << std::endl;
     g_application = this;
-    m_string = "This is not a test";
+
 
 
     m_window = std::make_shared<Window>(1800, 1200, "Demo");

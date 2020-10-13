@@ -1,7 +1,8 @@
 #version 330 core
-#extension GL_ARB_shading_language_include : require
 
 #include SharedPBR.glsl
+
+
 struct Light
 {
     float intensity;
@@ -40,8 +41,6 @@ uniform vec3 cameraPosition;
 in vec3 vNormal;
 in vec3 vPosition;
 in vec2 TexCoord;
-const float PI = 3.14159265359;
-
 
 struct PBRInfo
 {

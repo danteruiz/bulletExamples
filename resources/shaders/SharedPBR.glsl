@@ -1,6 +1,7 @@
-float V_SmithGGXCorrelated(float NdotL, float NdotL, float alphaG)
+const float PI = 3.14159265359;
+float V_SmithGGXCorrelated(float NdotL, float NdotV, float alphaG)
 {
-    float alphaG2 = alphaG * alphaG ;
+    float alphaG2 = alphaG * alphaG;
     float Lambda_GGXV = NdotL * sqrt (( NdotV * alphaG2 + NdotV ) * NdotV + alphaG2 );
     float Lambda_GGXL = NdotV * sqrt (( NdotL * alphaG2 + NdotL ) * NdotL + alphaG2 );
 
@@ -40,6 +41,11 @@ float NDF(float NdotH, float roughness)
 vec3 F_Schlick(float VdotH, vec3 r0, vec3 f90)
 {
     return r0 + (f90 - r0) * pow((1.0 - VdotH), 5.0);
+}
+
+vec3 F_Schlick2(float VdotH, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - VdotH, 5.0);
 }
 
 float ShlickGGX(float NdotV, float roughness)

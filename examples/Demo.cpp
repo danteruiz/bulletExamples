@@ -658,14 +658,17 @@ void DemoApplication::exec()
         m_window->simpleUpdate();
         float f = 0.0f;
         mouse->update();
-        if (!m_debugUI->focus())
-        {
-            updateCameraOrientation(mouse, deltaTime);
-            updateCameraPosition(keyboard, deltaTime);
+        if (!m_debugUI->getRotateCamera()) {
+            if (!m_debugUI->focus() && !m_debugUI->getRotateCamera())
+            {
+                updateCameraOrientation(mouse, deltaTime);
+                updateCameraPosition(keyboard, deltaTime);
 
+            }
+
+        } else {
+            rotateCameraAroundEntity(m_modelEntity, deltaTime);
         }
-
-        //rotateCameraAroundEntity(m_modelEntity, deltaTime);
 
         glm::vec3 cameraFront = camera.orientation * UNIT_Z;
         glm::vec3 cameraUp = camera.orientation * UNIT_Y;

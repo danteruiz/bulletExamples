@@ -5,18 +5,57 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
+static std::string const INCLUDE = "#include";
+
+std::string getPath(std::string const &filePath)
+{
+    std::string directory;
+    const size_t last_slash_idx = filePath.rfind('/');
+    if (std::string::npos != last_slash_idx)
+    {
+        directory = filePath.substr(0, last_slash_idx + 1);
+    }
+    return directory;
+}
+
+
+std::string getSourceCode(std::string const &filePath, std::string const &defines);
+
+std::string preprocessShaderSource(std::string const &filePath)
+{
+    std::ifstream shaderFile(filePath);
+
+    std::string line;
+
+    std::string source = "";
+    while (std::getline(shaderFile, line))
+    {
+        if (line.find(INCLUDE) != std::string::npos)
+        {
+            line.erase(0, INCLUDE.size());
+            line.erase(remove_if(line.begin(), line.end(), isspace), line.end());
+            source += getSourceCode(getPath(filePath) + line, "");
+            continue;
+        }
+
+        source += line + '\n';
+    }
+
+    shaderFile.close();
+
+    return source;
+}
 
 std::string getSourceCode(std::string const &filePath, std::string const &defines)
 {
     std::string sourceCode;
-
-    std::ifstream shaderFile(filePath);
-    std::stringstream shaderStream;
-    shaderStream << shaderFile.rdbuf();
-    shaderFile.close();
-    sourceCode = shaderStream.str();
-    sourceCode.insert(17, "\n" + defines);
+    sourceCode = preprocessShaderSource(filePath);
+    if (!defines.empty())
+    {
+        sourceCode.insert(17, "\n" + defines);
+    }
     return sourceCode;
 }
 

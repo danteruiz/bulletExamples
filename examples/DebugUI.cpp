@@ -41,6 +41,15 @@ void DebugUI::show(Entity &entity, Light &light, float deltaTime, std::function<
 
     ImGui::Separator();
     ImGui::Text("Camera");
+    if (ImGui::RadioButton("Rotating Camera", m_rotateCamera)) {
+        m_rotateCamera = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("FPS Camera", !m_rotateCamera))
+    {
+        m_rotateCamera = false;
+    }
+
     ImGui::Separator();
 
     ImGui::Text("Light");
