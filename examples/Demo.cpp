@@ -60,6 +60,9 @@ static std::string const IBLTexturePath = resources + "images/IBL/TropicalBeach/
 std::shared_ptr<Texture> IBLTexture;
 
 
+
+std::shared_ptr<Material> DEFAULT_MATERIAL = std::make_shared<Material>();
+
 unsigned int captureFBO, captureRBO, envCubemap, irradianceMap;
 
 
@@ -237,8 +240,7 @@ DemoApplication::DemoApplication()
 
     // setting up model entity 90.0f, 180.0f
     m_modelEntity.rotation = glm::quat(glm::radians(glm::vec3(90.0f, 180.0f, 0.0)));
-    //m_modelEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
-    m_modelEntity.model = loadModel(m_debugUI->getModelPath());
+    m_modelEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
 
     // setting up skybox
     //m_skybox.texture = loadCubeMap(CUBE_MAP_IMAGES);
@@ -264,6 +266,7 @@ DemoApplication::DemoApplication()
     m_pipeline = std::make_shared<Shader>(fragmentShader, vertexShader);
     m_debugDraw = std::make_shared<DebugDraw>();
 
+    m_modelEntity.model->materials["default"] = std::make_tuple(DEFAULT_MATERIAL, m_pipeline);
     m_convertToCubeMap = std::make_shared<Shader>(CONVERT_TO_CUBE_MAP, SKYBOX_VERT);
     m_irradiance = std::make_shared<Shader>(IRRADIANCE_CONVOLUTION, SKYBOX_VERT);
     m_filterMap = std::make_shared<Shader>(FILTER_MAP, SKYBOX_VERT);
@@ -326,13 +329,15 @@ DemoApplication::DemoApplication()
 
         //renderCube();
 
-        auto mesh = m_skybox.model->meshes[0];
-        auto vertexBuffer = mesh.vertexBuffer;
+        auto& model = m_skybox.model;
+        auto& mesh = model->meshes[0];
+        auto& primitive = mesh.primitives[0];
+        auto vertexBuffer = model->vertexBuffer;
         vertexBuffer->bind();
         vertexBuffer->getLayout()->enableAttributes();
 
-        mesh.indexBuffer->bind();
-        glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+        model->indexBuffer->bind();
+        glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -371,13 +376,15 @@ DemoApplication::DemoApplication()
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto mesh = m_skybox.model->meshes[0];
-        auto vertexBuffer = mesh.vertexBuffer;
+        auto& model = m_skybox.model;
+        auto& mesh = model->meshes[0];
+        auto& primitive = mesh.primitives[0];
+        auto vertexBuffer = model->vertexBuffer;
         vertexBuffer->bind();
         vertexBuffer->getLayout()->enableAttributes();
 
-        mesh.indexBuffer->bind();
-        glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+        model->indexBuffer->bind();
+        glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -430,13 +437,15 @@ DemoApplication::DemoApplication()
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            auto mesh = m_skybox.model->meshes[0];
-            auto vertexBuffer = mesh.vertexBuffer;
+            auto& model = m_skybox.model;
+            auto& mesh = model->meshes[0];
+            auto& primitive = mesh.primitives[0];
+            auto vertexBuffer = model->vertexBuffer;
             vertexBuffer->bind();
             vertexBuffer->getLayout()->enableAttributes();
 
-            mesh.indexBuffer->bind();
-            glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+            model->indexBuffer->bind();
+            glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
         }
     }
 
@@ -461,13 +470,14 @@ DemoApplication::DemoApplication()
     m_brdfLut->bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    auto mesh = quad->meshes[0];
-    auto vertexBuffer = mesh.vertexBuffer;
+    auto& mesh = quad->meshes[0];
+    auto& primitive = mesh.primitives[0];
+    auto vertexBuffer = quad->vertexBuffer;
     vertexBuffer->bind();
     vertexBuffer->getLayout()->enableAttributes();
 
-    mesh.indexBuffer->bind();
-    glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    quad->indexBuffer->bind();
+    glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -610,16 +620,18 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
     shader->setUniformMat4("projection", renderArgs.projection);
     shader->setUniformMat4("view", glm::mat4(glm::mat3(renderArgs.view)));
 
-    auto mesh = skybox.model->meshes[0];
-    auto vertexBuffer = mesh.vertexBuffer;
+    auto& model = skybox.model;
+    auto& mesh = skybox.model->meshes[0];
+    auto& primitive = mesh.primitives[0];
+    auto vertexBuffer = model->vertexBuffer;
     vertexBuffer->bind();
     vertexBuffer->getLayout()->enableAttributes();
     shader->setUniform1i("skybox", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 
-    mesh.indexBuffer->bind();
-    glDrawElements(GL_TRIANGLES, (GLsizei) mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    model->indexBuffer->bind();
+    glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
     glDepthMask(GL_TRUE);
 }
 
@@ -678,9 +690,10 @@ void DemoApplication::exec()
             }
         };
 
-        m_debugUI->show(m_modelEntity, m_light, [&] {
+        m_debugUI->show(m_modelEntity, m_light, deltaTime, [&] {
             m_pipeline = std::make_shared<Shader> (fragmentShader, vertexShader);
         }, loadNewModel);
+
         RenderArgs renderArgs;
         renderArgs.view = view;
         renderArgs.projection = projection;

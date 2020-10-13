@@ -41,10 +41,6 @@ struct Primitive
 struct Mesh
 {
     std::vector<Primitive> primitives;
-    std::vector<Vertex> vertices;
-    std::vector<int> indices;
-    Buffer::Pointer vertexBuffer;
-    Buffer::Pointer indexBuffer;
     glm::mat4 matrix;
 };
 

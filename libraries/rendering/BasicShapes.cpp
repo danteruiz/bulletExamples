@@ -14,6 +14,10 @@ static int const X_SEGMENTS = 64.0f;
 static int const Y_SEGMENTS = 64.0f;
 Model::Pointer buildSphere()
 {
+    Model::Pointer geometry = std::make_shared<Model>();
+
+    auto& vertices = geometry->vertices;
+    auto& indices = geometry->indices;
     Mesh mesh;
 
     for (int y = 0; y <= Y_SEGMENTS; ++y)
@@ -28,7 +32,7 @@ Model::Pointer buildSphere()
             float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
 
             Vertex vertex({xPos, yPos, zPos}, {xPos, yPos, zPos});
-            mesh.vertices.push_back(vertex);
+            vertices.push_back(vertex);
         }
     }
 
@@ -41,34 +45,41 @@ Model::Pointer buildSphere()
         {
             if (i != 0)
             {
-                mesh.indices.push_back(k1);
-                mesh.indices.push_back(k2);
-                mesh.indices.push_back(k1 + 1);
+                indices.push_back(k1);
+                indices.push_back(k2);
+                indices.push_back(k1 + 1);
             }
 
             if (i != (Y_SEGMENTS -1))
             {
-                mesh.indices.push_back(k1 + 1);
-                mesh.indices.push_back(k2);
-                mesh.indices.push_back(k2 +1);
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+                indices.push_back(k2 +1);
             }
         }
     }
 
+    Primitive primitive;
+    primitive.indexStart = 0;
+    primitive.vertexStart = 0;
+    primitive.vertexCount = static_cast<uint32_t>(vertices.size());
+    primitive.indexCount =  static_cast<uint32_t>(indices.size());
+    primitive.materialName = "default";
 
+    mesh.primitives.push_back(primitive);
 
-    Model::Pointer geometry = std::make_shared<Model>();
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
     layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
 
-    mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
-    mesh.vertexBuffer->setLayout(layout);
-    mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
+    geometry->vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, geometry->vertices.size() * sizeof(Vertex), geometry->vertices.size(), geometry->vertices.data());
+    geometry->vertexBuffer->setLayout(layout);
+    geometry->indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, geometry->indices.size() * sizeof(int), geometry->indices.size(), geometry->indices.data());
 
     //geometry->materials["default"] = std::make_shared<Material>();
 
     geometry->meshes.push_back(mesh);
+    geometry->hasIndexBuffer = true;
     return geometry;
 }
 
@@ -79,26 +90,35 @@ Model::Pointer buildQuad()
 
     Mesh mesh;
 
-    mesh.vertices = {
+    model->vertices = {
         Vertex(glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec2(0.0f, 1.0f)),
         Vertex(glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0), glm::vec2(0.0f, 0.0f)),
         Vertex(glm::vec3(1.0, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec2(1.0f, 1.0f)),
         Vertex(glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec2(1.0f, 0.0f))
     };
 
-    mesh.indices = {
+    model->indices = {
         0, 1, 2,
         1, 2, 3
     };
+
+    Primitive primitive;
+    primitive.indexStart = 0;
+    primitive.vertexStart = 0;
+    primitive.vertexCount = static_cast<uint32_t>(model->vertices.size());
+    primitive.indexCount =  static_cast<uint32_t>(model->indices.size());
+    primitive.materialName = "default";
+
+    mesh.primitives.push_back(primitive);
 
      std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
     layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
     layout->setAttribute(Slots::TEXCOORD, 2, sizeof(Vertex), (unsigned int) offsetof(Vertex,texCoord));
 
-    mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
-    mesh.vertexBuffer->setLayout(layout);
-    mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
+    model->vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, model->vertices.size() * sizeof(Vertex), model->vertices.size(), model->vertices.data());
+    model->vertexBuffer->setLayout(layout);
+    model->indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, model->indices.size() * sizeof(int), model->indices.size(), model->indices.data());
 
     model->meshes.push_back(mesh);
 
@@ -111,7 +131,7 @@ Model::Pointer buildTriangle()
     Model::Pointer geometry = std::make_shared<Model>();
 
     Mesh mesh;
-    mesh.vertices = {
+    geometry->vertices = {
         Vertex(glm::vec3(0.0f, 1.0f, 0.0f)),
         Vertex(glm::vec3(1.0f, -1.0f, 1.0f)),
         Vertex(glm::vec3(1.0f, -1.0f, -1.0f)),
@@ -119,7 +139,7 @@ Model::Pointer buildTriangle()
         Vertex(glm::vec3(-1.0f, -1.0f, -1.0f)),
     };
 
-    mesh.indices = {
+    geometry->indices = {
         0, 1, 2,
         0, 2, 4,
         0, 3, 4,
@@ -132,10 +152,9 @@ Model::Pointer buildTriangle()
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
     layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
 
-    mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
-    mesh.vertexBuffer->setLayout(layout);
-    mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
-
+    geometry->vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, geometry->vertices.size() * sizeof(Vertex), geometry->vertices.size(), geometry->vertices.data());
+    geometry->vertexBuffer->setLayout(layout);
+    geometry->indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, geometry->indices.size() * sizeof(int), geometry->indices.size(), geometry->indices.data());
     geometry->meshes.push_back(mesh);
 
     return geometry;
@@ -148,7 +167,7 @@ Model::Pointer buildCube()
 
 
     Mesh mesh;
-    mesh.vertices = {
+    geometry->vertices = {
         // right side 0 - 3
         Vertex(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
         Vertex(glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
@@ -187,7 +206,7 @@ Model::Pointer buildCube()
     };
 
 
-    mesh.indices = {
+    geometry->indices = {
         // right side
         0, 1, 2,
         2, 1, 3,
@@ -209,15 +228,22 @@ Model::Pointer buildCube()
     };
 
 
+    Primitive primitive;
+    primitive.indexStart = 0;
+    primitive.vertexStart = 0;
+    primitive.vertexCount = static_cast<uint32_t>(geometry->vertices.size());
+    primitive.indexCount =  static_cast<uint32_t>(geometry->indices.size());
+
+    mesh.primitives.push_back(primitive);
+
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
     layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
     layout->setAttribute(Slots::TEXCOORD, 2, sizeof(Vertex), (unsigned int) offsetof(Vertex,texCoord));
 
-    mesh.vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.size(), mesh.vertices.data());
-    mesh.vertexBuffer->setLayout(layout);
-    mesh.indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, mesh.indices.size() * sizeof(int), mesh.indices.size(), mesh.indices.data());
-
+    geometry->vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, geometry->vertices.size() * sizeof(Vertex), geometry->vertices.size(), geometry->vertices.data());
+    geometry->vertexBuffer->setLayout(layout);
+    geometry->indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, geometry->indices.size() * sizeof(int), geometry->indices.size(), geometry->indices.data());
     geometry->meshes.push_back(mesh);
 
     return geometry;

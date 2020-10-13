@@ -54,6 +54,12 @@ bool Window::createWindow()
 
     glfwMakeContextCurrent(m_glfwWindow);
 
+
+    if (GL_ARB_shading_language_include)
+    {
+        std::cout << "can include" << std::endl;
+    }
+
     return true;
 }
 

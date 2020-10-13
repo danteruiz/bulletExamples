@@ -13,13 +13,7 @@
 DebugUI::DebugUI(std::shared_ptr<Window> const &window)
 {
     imgui::initialize(window->getWindowPtr());
-
-#ifdef __APPLE__
-    m_path = "/Users/danteruiz/code/glTF-Sample-Models/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf";
-#else
-    m_path = "C:/Users/dante/code/glTF-Sample-Models/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf";
-#endif
-    m_path.resize(3000);
+    m_path = gltfModels::getModelPath(m_modelCurrentIndex);
 }
 
 
@@ -28,7 +22,7 @@ DebugUI::~DebugUI()
     imgui::uninitialize();
 }
 
-void DebugUI::show(Entity &entity, Light &light, std::function<void()> compileShader, std::function<void(std::string, bool)> loadNewModel)
+void DebugUI::show(Entity &entity, Light &light, float deltaTime, std::function<void()> compileShader, std::function<void(std::string, bool)> loadNewModel)
 {
     m_lightColor[0] = light.color.x;
     m_lightColor[1] = light.color.y;
@@ -38,9 +32,12 @@ void DebugUI::show(Entity &entity, Light &light, std::function<void()> compileSh
     imgui::newFrame();
     ImGui::Begin("DebugUI");
 
-    if (ImGui::Button("Recompile PBR Shader")) {
+
+    ImGui::Text("deltaTime: %.6f", deltaTime);
+
+    /*if (ImGui::Button("Recompile PBR Shader")) {
         compileShader();
-    }
+        }*/
 
     ImGui::Separator();
     ImGui::Text("Camera");
