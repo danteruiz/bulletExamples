@@ -20,9 +20,7 @@ class Shader;
 
 struct Marker
 {
-    glm::vec3 position { 0.0f, 0.0f, 0.0f };
-    glm::quat orientation { 1.0f, 0.0f, 0.0f, 0.0f };
-    glm::vec3 scale { 1.0f, 1.0f, 1.0f };
+    glm::mat4 matrix;
 };
 
 class DebugDraw
@@ -42,10 +40,11 @@ public:
     DemoApplication();
     void exec() override;
 private:
+
+    void generateIBLEnvironment(std::string& texturePath);
     Light m_light;
     Entity m_modelEntity;
     Skybox m_skybox;
-
 
     std::shared_ptr<BasicShapes> m_basicShapes;
     std::shared_ptr<DebugUI> m_debugUI;

@@ -21,6 +21,8 @@ public:
 
     void setWidthAndHeight(int width, int height);
 
+    void resetWindowSize();
+
     GLFWwindow* getWindowPtr() const { return m_glfwWindow; }
 private:
     GLFWwindow* m_glfwWindow { nullptr };

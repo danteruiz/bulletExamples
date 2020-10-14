@@ -1,4 +1,7 @@
-#include "Helper.h";
+#include "Helper.h"
+
+#include <Texture.h>
+#include <Model.h>
 
 std::ostream& operator<<(std::ostream& os, const glm::quat& q)
 {

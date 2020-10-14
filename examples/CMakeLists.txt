@@ -2,6 +2,7 @@ project(PbrViewer)
 set(TARGET_NAME PbrViewer)
 
 generate_model_paths()
+generate_ibl_paths()
 file(GLOB source_files "*.h" "*.cpp"
   "${CMAKE_CURRENT_BINARY_DIR}/src/*.cpp" "${CMAKE_CURRENT_BINARY_DIR}/src/*.h")
 

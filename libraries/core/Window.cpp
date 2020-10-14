@@ -70,3 +70,12 @@ void Window::setWidthAndHeight(int width, int height)
     m_height = height;
     glViewport(0, 0, m_width, m_height);
 }
+
+
+void Window::resetWindowSize()
+{
+    int width, height;
+
+    glfwGetFramebufferSize(m_glfwWindow, &width, &height);
+    glViewport(0, 0, width, height);
+}

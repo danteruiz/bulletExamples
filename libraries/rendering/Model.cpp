@@ -14,6 +14,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <glm/gtx/quaternion.hpp>
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -44,7 +46,7 @@ void processIndexData(T const *gltfIndices, std::vector<uint32_t>& indices, size
 {
     for (size_t index = 0; index < count; index++)
     {
-        indices.push_back(gltfIndices[index] + startVertexIndex);
+        indices.push_back(gltfIndices[index] + (T) startVertexIndex);
     }
 }
 
@@ -139,7 +141,7 @@ Mesh processMesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices, 
 
 glm::mat4 calculateLocalMatrix(glm::mat4& matrix, glm::vec3& translation, glm::vec3& scale, glm::quat& rotation)
 {
-    return glm::translate(glm::mat4(1.0f), translation) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale) * matrix;
+    return glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation) * glm::scale(glm::mat4(1.0f), scale);// * matrix;
 }
 
 void processNode(tinygltf::Model &gltfModel, tinygltf::Node &node, std::shared_ptr<Model> &model, glm::mat4 parentMatrix = glm::mat4(1.0f))

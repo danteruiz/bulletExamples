@@ -9,11 +9,13 @@
 #include <Material.h>
 #include <Model.h>
 #include <ModelPaths.h>
+#include <IBLEnvironments.h>
 
 DebugUI::DebugUI(std::shared_ptr<Window> const &window)
 {
     imgui::initialize(window->getWindowPtr());
     m_path = gltfModels::getModelPath(m_modelCurrentIndex);
+    m_environmentMapPath = ibl::getIBLEnvironmentPath(m_hdrIndex);
 }
 
 
@@ -22,7 +24,8 @@ DebugUI::~DebugUI()
     imgui::uninitialize();
 }
 
-void DebugUI::show(Entity &entity, Light &light, float deltaTime, std::function<void()> compileShader, std::function<void(std::string, bool)> loadNewModel)
+void DebugUI::show(Entity &entity, Light &light, float deltaTime, std::function<void()> compileShader,
+                   std::function<void(std::string, bool)> loadNewModel, std::function<void(std::string)> generateIBLEnvironments)
 {
     m_lightColor[0] = light.color.x;
     m_lightColor[1] = light.color.y;
@@ -48,6 +51,27 @@ void DebugUI::show(Entity &entity, Light &light, float deltaTime, std::function<
     if (ImGui::RadioButton("FPS Camera", !m_rotateCamera))
     {
         m_rotateCamera = false;
+    }
+
+    ImGui::Separator();
+    ImGui::Text("Environment Map");
+
+    std::vector<std::string> iblNames = ibl::getIBLNames();
+    if (imgui::Combo("HDR textures", &m_hdrIndex, iblNames))
+    {
+        m_environmentMapPath = ibl::getIBLEnvironmentPath(m_hdrIndex);
+        generateIBLEnvironments(m_environmentMapPath);
+    }
+
+    ImGui::Text("Skybox");
+    if (ImGui::RadioButton("Irradiance Map", m_useIrradianceMap)) {
+        m_useIrradianceMap = true;
+    }
+
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Regular Map", !m_useIrradianceMap))
+    {
+        m_useIrradianceMap = false;
     }
 
     ImGui::Separator();
