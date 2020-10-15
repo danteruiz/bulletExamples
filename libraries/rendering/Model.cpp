@@ -46,7 +46,7 @@ void processIndexData(T const *gltfIndices, std::vector<uint32_t>& indices, size
 {
     for (size_t index = 0; index < count; index++)
     {
-        indices.push_back(gltfIndices[index] + (T) startVertexIndex);
+        indices.push_back((uint32_t) gltfIndices[index] + (uint32_t) startVertexIndex);
     }
 }
 
@@ -108,7 +108,6 @@ Mesh processMesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices, 
             tinygltf::Buffer &indexBuffer = model.buffers[indexBufferView.buffer];
 
             void* const  indexData = &indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset];
-            //std::cout << "number of indices: " << indexAccessor.count << std::endl;
             switch (indexAccessor.componentType)
             {
                 case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:

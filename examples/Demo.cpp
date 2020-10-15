@@ -217,7 +217,6 @@ DemoApplication::DemoApplication()
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-
     m_debugUI = std::make_shared<DebugUI>(m_window);
     m_basicShapes = std::make_shared<BasicShapes>();
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
@@ -231,10 +230,7 @@ DemoApplication::DemoApplication()
     m_skybox.shader = std::make_shared<Shader>(SKYBOX_FRAG, SKYBOX_VERT);
     m_skybox.model = m_basicShapes->getShape(BasicShapes::CUBE);
 
-
     auto quad = m_basicShapes->getShape(BasicShapes::QUAD);
-
-    IBLTexture = loadIBLTexture(IBLTexturePath);
 
     // setting up lighting
     m_light.position = glm::vec3(-1.6f, 8.0f, 0.0f);
@@ -244,7 +240,6 @@ DemoApplication::DemoApplication()
 
     mouse = std::make_shared<Mouse>(InputDevice::MOUSE);
     keyboard = std::make_shared<Keyboard>(InputDevice::KEYBOARD);
-
 
     // setup debug rendering objects
     m_pipeline = std::make_shared<Shader>(fragmentShader, vertexShader);
