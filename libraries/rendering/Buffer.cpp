@@ -2,7 +2,6 @@
 
 #include "Format.h"
 
-
 Buffer::Buffer(Buffer::Type type, size_t size, size_t count, void* data) : m_type(type), m_size(size), m_count(count)
 {
     glGenBuffers(1, &m_id);

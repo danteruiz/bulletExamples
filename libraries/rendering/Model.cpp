@@ -13,6 +13,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <StopWatch.h>
 
 #include <glm/gtx/quaternion.hpp>
 
@@ -220,6 +221,7 @@ void getShadersAndMaterials(std::shared_ptr<Model>& model, tinygltf::Model gltfM
 Model::Pointer loadModel(std::string const &file)
 {
 
+    ChronoStopWatch sw("loadModel");
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     std::string err;

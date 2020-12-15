@@ -3,7 +3,6 @@
 #include <gl/glew.h>
 #include <memory>
 
-
 class Layout;
 class Buffer
 {

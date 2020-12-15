@@ -21,6 +21,7 @@
 #include <Keyboard.h>
 #include <Buffer.h>
 #include <GL/glew.h>
+#include <spdlog/spdlog.h>
 #include <BasicShapes.h>
 #include <Model.h>
 #include <Format.h>
@@ -28,6 +29,7 @@
 #include <math.h>
 #include <ModelPaths.h>
 #include <imgui/Imgui.h>
+#include <StopWatch.h>
 
 #include "DebugUI.h"
 #include "Helper.h"
@@ -206,8 +208,12 @@ void DebugDraw::renderMarkers(std::vector<Marker> const  &markers, glm::mat4 con
         glDrawArrays(GL_LINES, 0, 6);
     }
 }
+
+
+
 DemoApplication::DemoApplication()
 {
+    spdlog::info("DemoApplication::DemoApplication");
     glewExperimental = true;
     if (glewInit() != GLEW_OK)
     {
@@ -421,7 +427,6 @@ void DemoApplication::exec()
 
     while (!m_window->shouldClose())
     {
-
         currentTime = std::chrono::steady_clock::now();
 
 
@@ -429,6 +434,7 @@ void DemoApplication::exec()
 
         previousTime = currentTime;
         float deltaTime = (float) elapsed.count() / 1000.0f;
+
         m_window->simpleUpdate();
         float f = 0.0f;
         mouse->update();
@@ -501,6 +507,7 @@ void DemoApplication::exec()
 
 void DemoApplication::generateIBLEnvironment(std::string& texturePath)
 {
+    ChronoStopWatch sw("DemoApplication::generateIBLEnvironment");
 
     auto quad = m_basicShapes->getShape(BasicShapes::QUAD);
     IBLTexture = loadIBLTexture(texturePath);
