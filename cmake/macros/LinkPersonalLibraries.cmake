@@ -1,5 +1,5 @@
 function(LINK_PERSONAL_LIBRARIES)
-  file(RELATIVE_PATH RELATIVE_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR} "${LIBRARIES_DIR}")
+  file(RELATIVE_PATH RELATIVE_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR} "${ENGINE_DIR}")
   set(LIBRARIES_TO_LINK ${ARGN})
 
   foreach (LIBRARY ${LIBRARIES_TO_LINK})
@@ -9,7 +9,8 @@ function(LINK_PERSONAL_LIBRARIES)
   endforeach()
 
   foreach (LIBRARY ${LIBRARIES_TO_LINK})
-    target_include_directories(${TARGET_NAME} PRIVATE "${LIBRARIES_DIR}/${LIBRARY}")
+    target_include_directories(${TARGET_NAME} PRIVATE "${ENGINE_DIR}/${LIBRARY}")
+    target_include_directories(${TARGET_NAME} PRIVATE "${ENGINE_DIR}")
     target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_BINARY_DIR}/libraries/${LIBRARY}")
     target_link_libraries(${TARGET_NAME} PRIVATE ${LIBRARY})
   endforeach()

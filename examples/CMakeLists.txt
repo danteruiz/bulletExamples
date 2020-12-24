@@ -18,6 +18,6 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC RESOURCE_PATH="${CMAKE_SOURCE_DIR}/resources/")
 link_personal_libraries(render input core ui)
-target_link_libraries(${PROJECT_NAME} PRIVATE CONAN_PKG::fmt CONAN_PKG::spdlog)
+#target_link_libraries(${PROJECT_NAME} PRIVATE CONAN_PKG::fmt CONAN_PKG::spdlog)
 target_include_directories(${TARGET_NAME}
   PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
