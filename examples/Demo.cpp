@@ -31,6 +31,8 @@
 #include <imgui/Imgui.h>
 #include <StopWatch.h>
 
+#include <Logger.h>
+
 #include "DebugUI.h"
 #include "Helper.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -214,8 +216,9 @@ void DebugDraw::renderMarkers(std::vector<Marker> const  &markers, glm::mat4 con
 
 DemoApplication::DemoApplication()
 {
-    auto console = spdlog::stdout_color_mt("console");
-    spdlog::get("console")->info("loggers can be retrieved from a global registry using the spdlog::get(logger_name)");
+    logger::initializeSpdLog();
+    //auto console = spdlog::stdout_color_mt("console");
+    //spdlog::get("console")->info("loggers can be retrieved from a global registry using the spdlog::get(logger_name)");
     glewExperimental = true;
     if (glewInit() != GLEW_OK)
     {
@@ -253,7 +256,7 @@ DemoApplication::DemoApplication()
     m_pipeline = std::make_shared<Shader>(fragmentShader, vertexShader);
     m_debugDraw = std::make_shared<DebugDraw>();
 
-    m_modelEntity.model->materials["default"] = std::make_tuple(DEFAULT_MATERIAL, m_pipeline);
+    m_modelEntity.model->materials[0] = std::make_tuple(DEFAULT_MATERIAL, m_pipeline);
     m_convertToCubeMap = std::make_shared<Shader>(CONVERT_TO_CUBE_MAP, SKYBOX_VERT);
     m_irradiance = std::make_shared<Shader>(IRRADIANCE_CONVOLUTION, SKYBOX_VERT);
     m_filterMap = std::make_shared<Shader>(FILTER_MAP, SKYBOX_VERT);
@@ -327,7 +330,7 @@ void renderModelEntity(RenderArgs const &renderArgs)
         {
             for (auto primitive: mesh.primitives)
             {
-                auto& tuple = geometry->materials[primitive.materialName];
+                auto& tuple = geometry->materials[primitive.materialIndex];
                 auto& shader = std::get<1>(tuple);
                 auto& material = std::get<0>(tuple);
                 shader->bind();
@@ -419,6 +422,7 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
 
 void DemoApplication::exec()
 {
+    spdlog::debug("DemoApplication::exec");
     glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);

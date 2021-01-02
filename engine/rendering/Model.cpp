@@ -13,6 +13,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <spdlog/spdlog.h>
 #include <StopWatch.h>
 
 #include <glm/gtx/quaternion.hpp>
@@ -53,6 +54,7 @@ void processIndexData(T const *gltfIndices, std::vector<uint32_t>& indices, size
 
 Mesh processMesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices, tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 {
+    spdlog::debug("Model::processMesh");
     Mesh mesh;
     for (size_t i = 0; i < gltfMesh.primitives.size(); ++i)
     {
@@ -130,7 +132,7 @@ Mesh processMesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices, 
             }
             prim.indexCount = static_cast<uint32_t>(indexAccessor.count);
         }
-        prim.materialName = model.materials[primitive.material].name;
+        prim.materialIndex = primitive.material;
         mesh.primitives.push_back(prim);
     }
 
@@ -190,12 +192,16 @@ void processNode(tinygltf::Model &gltfModel, tinygltf::Node &node, std::shared_p
 
 void getShadersAndMaterials(std::shared_ptr<Model>& model, tinygltf::Model gltfModel)
 {
-    for (auto& gltfMaterial : gltfModel.materials)
+    size_t materialCount = gltfModel.materials.size();
+    for (size_t index = 0; index < materialCount; ++index)
     {
+        const auto& gltfMaterial = gltfModel.materials[index];
         for (auto ext: gltfMaterial.extensions) {
             std::cout << "externals" << ext.first << std::endl;
+            spdlog::debug("model: externals {}", ext.first);
         }
 
+        spdlog::debug("material name: {}", gltfMaterial.name);
         std::string defines;
         std::shared_ptr<Material> material = std::make_shared<Material>();
         auto pbrMaterial = gltfMaterial.pbrMetallicRoughness;
@@ -214,7 +220,7 @@ void getShadersAndMaterials(std::shared_ptr<Model>& model, tinygltf::Model gltfM
 
         std::shared_ptr<Shader> shader = std::make_shared<Shader>(FRAGMENT_SHADER, VERTEX_SHADER, defines);
         auto tuple = std::make_tuple(material, shader);
-        model->materials[gltfMaterial.name] = tuple;
+        model->materials[(uint32_t) index] = tuple;
     }
 }
 

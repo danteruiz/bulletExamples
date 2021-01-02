@@ -35,7 +35,7 @@ struct Primitive
     uint32_t vertexStart;
     uint32_t indexCount;
     uint32_t vertexCount;
-    std::string materialName;
+    uint32_t materialIndex;
 };
 
 struct Mesh
@@ -59,7 +59,7 @@ struct Model
     Buffer::Pointer vertexBuffer;
     Buffer::Pointer indexBuffer;
     bool hasIndexBuffer { false };
-    std::unordered_map<std::string, std::tuple<std::shared_ptr<Material>, std::shared_ptr<Shader>>> materials;
+    std::unordered_map<uint32_t, std::tuple<std::shared_ptr<Material>, std::shared_ptr<Shader>>> materials;
 };
 
 Model::Pointer loadModel(std::string const &file);

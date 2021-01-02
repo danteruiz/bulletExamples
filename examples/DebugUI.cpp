@@ -134,12 +134,12 @@ void DebugUI::show(Entity &entity, Light &light, float deltaTime, std::function<
 
         for (auto& entry : entity.model->materials)
         {
-            materialNames.push_back(entry.first);
+            materialNames.push_back(std::to_string(entry.first));
         }
 
         imgui::Combo("material list", &m_materialIndex, materialNames);
 
-        auto &material = std::get<0>(entity.model->materials[materialNames[m_materialIndex]]);
+        auto &material = std::get<0>(entity.model->materials[m_materialIndex]);
         auto color = material->albedo;
         float entityColor[3] = { color.x, color.y, color.z};
         ImGui::ColorEdit3("entity color", entityColor);

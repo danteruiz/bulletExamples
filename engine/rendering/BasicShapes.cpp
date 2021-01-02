@@ -64,7 +64,7 @@ Model::Pointer buildSphere()
     primitive.vertexStart = 0;
     primitive.vertexCount = static_cast<uint32_t>(vertices.size());
     primitive.indexCount =  static_cast<uint32_t>(indices.size());
-    primitive.materialName = "default";
+    primitive.materialIndex = 0;
 
     mesh.primitives.push_back(primitive);
 
@@ -107,7 +107,7 @@ Model::Pointer buildQuad()
     primitive.vertexStart = 0;
     primitive.vertexCount = static_cast<uint32_t>(model->vertices.size());
     primitive.indexCount =  static_cast<uint32_t>(model->indices.size());
-    primitive.materialName = "default";
+    primitive.materialIndex = 0;
 
     mesh.primitives.push_back(primitive);
 

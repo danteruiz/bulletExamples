@@ -1,7 +1,5 @@
 #pragma once
 
-class Logger {
-public:
-
-private:
+namespace logger {
+    void initializeSpdLog();
 }
