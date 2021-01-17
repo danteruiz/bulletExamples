@@ -7,6 +7,8 @@ struct Texture;
 
 struct Material
 {
+    using Pointer = std::shared_ptr<Material>;
+
     enum MapKey
     {
         NONE = 0,
@@ -18,7 +20,6 @@ struct Material
         NUM_FLAGS
     };
 
-    using MaterialPointer = std::shared_ptr<Material>;
     glm::vec3 albedo { 1.0f, 1.0f, 1.0f};
     glm::vec3 emissive { 0.0f, 0.0f, 0.0f };
     float roughness { 1.0f };

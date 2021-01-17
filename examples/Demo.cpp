@@ -22,7 +22,6 @@
 #include <Buffer.h>
 #include <GL/glew.h>
 #include <spdlog/spdlog.h>
-#include <BasicShapes.h>
 #include <Model.h>
 #include <Format.h>
 #include <Texture.h>
@@ -57,22 +56,17 @@ static glm::vec3 const UNIT_Z(0.0f, 0.0f, 1.0f);
 static glm::vec3 const UNIT_X(1.0f, 0.0f, 0.0f);
 static glm::vec3 const UNIT_Y(0.0f, 1.0f, 0.0f);
 
-
 static float const TWO_PI = 2 * M_PI;
 
-
-static std::string const IBLTexturePath = resources + "images/IBL/TropicalBeach/Tropical_Beach_3k.hdr";
+static std::string const IBLTexturePath = resources
+    + "images/IBL/TropicalBeach/Tropical_Beach_3k.hdr";
 std::shared_ptr<Texture> IBLTexture;
-
-
 
 std::shared_ptr<Material> DEFAULT_MATERIAL = std::make_shared<Material>();
 
 unsigned int captureFBO, captureRBO, envCubemap, irradianceMap;
 
-
 unsigned int prefilterMap, brdfLUTTexture;
-
 
 struct Camera
 {
@@ -130,8 +124,11 @@ void updateCameraPosition(std::shared_ptr<Keyboard> const &keyboard, float delta
 {
     glm::quat orientation = camera.orientation;
 
-    float zDirection = (keyboard->getButton(glfw::KEY_S)  * -1.0f) + keyboard->getButton(glfw::KEY_W);
-    float xDirection = (keyboard->getButton(glfw::KEY_D) * -1.0f) + keyboard->getButton(glfw::KEY_A);
+    float zDirection = (keyboard->getButton(glfw::KEY_S)  * -1.0f)
+        + keyboard->getButton(glfw::KEY_W);
+
+    float xDirection = (keyboard->getButton(glfw::KEY_D) * -1.0f)
+        + keyboard->getButton(glfw::KEY_A);
 
     glm::vec3 zOffset = (orientation * UNIT_Z) * zDirection * 20.0f;
     glm::vec3 xOffset = (orientation * UNIT_X) * xDirection * 20.0f;
@@ -192,12 +189,15 @@ DebugDraw::DebugDraw()
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
     layout->setAttribute(0, 3, sizeof(MarkerVertex), 0);
     layout->setAttribute(1, 3, sizeof(MarkerVertex), (unsigned int) offsetof(MarkerVertex, color));
-    m_vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, positions.size() * sizeof(MarkerVertex), positions.size(), positions.data());
+    m_vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, positions.size() * sizeof(MarkerVertex),
+                                              positions.size(), positions.data());
     m_vertexBuffer->setLayout(layout);
     m_debugPipeline = std::make_shared<Shader>(debugFragmentShader, debugVertexShader);
 }
 
-void DebugDraw::renderMarkers(std::vector<Marker> const  &markers, glm::mat4 const &view, glm::mat4 const &projection) {
+void DebugDraw::renderMarkers(std::vector<Marker> const  &markers, glm::mat4 const &view,
+                              glm::mat4 const &projection)
+{
 
     m_vertexBuffer->bind();
     m_vertexBuffer->getLayout()->enableAttributes();
@@ -218,7 +218,8 @@ DemoApplication::DemoApplication()
 {
     logger::initializeSpdLog();
     //auto console = spdlog::stdout_color_mt("console");
-    //spdlog::get("console")->info("loggers can be retrieved from a global registry using the spdlog::get(logger_name)");
+    //spdlog::get("console")->info("loggers can be retrieved from a global
+    //registry using the spdlog::get(logger_name)");
     glewExperimental = true;
     if (glewInit() != GLEW_OK)
     {
@@ -229,19 +230,19 @@ DemoApplication::DemoApplication()
     glBindVertexArray(VAO);
 
     m_debugUI = std::make_shared<DebugUI>(m_window);
-    m_basicShapes = std::make_shared<BasicShapes>();
+    m_modelCache = std::make_shared<ModelCache>();
     camera.position = glm::vec3(0.0f, 0.0f, -4.0f);
 
     // setting up model entity 90.0f, 180.0f
     m_modelEntity.rotation = glm::quat(glm::radians(glm::vec3(0.0f, 0.0f, 0.0)));
-    m_modelEntity.model = m_basicShapes->getShape(BasicShapes::SPHERE);
+    m_modelEntity.model = m_modelCache->getModelShape(ModelShape::Sphere);
 
     // setting up skybox
     //m_skybox.texture = loadCubeMap(CUBE_MAP_IMAGES);
     m_skybox.shader = std::make_shared<Shader>(SKYBOX_FRAG, SKYBOX_VERT);
-    m_skybox.model = m_basicShapes->getShape(BasicShapes::CUBE);
+    m_skybox.model = m_modelCache->getModelShape(ModelShape::Cube);
 
-    auto quad = m_basicShapes->getShape(BasicShapes::QUAD);
+    auto quad = m_modelCache->getModelShape(ModelShape::Quad);
 
     // setting up lighting
     m_light.position = glm::vec3(-1.6f, 8.0f, 0.0f);
@@ -367,7 +368,8 @@ void renderModelEntity(RenderArgs const &renderArgs)
 
                 if(geometry->hasIndexBuffer)
                 {
-                    glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
+                    glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT,
+                                   (void*) (primitive.indexStart * sizeof(GLuint)));
                 } else
                 {
                     glDrawArrays(GL_TRIANGLES, 0, geometry->vertices.size());
@@ -416,7 +418,8 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
     glBindTexture(GL_TEXTURE_CUBE_MAP, renderArgs.useIrradianceMap ? irradianceMap : envCubemap);
 
     model->indexBuffer->bind();
-    glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
+    glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*)
+                   (primitive.indexStart * sizeof(GLuint)));
     glDepthMask(GL_TRUE);
 }
 
@@ -436,7 +439,8 @@ void DemoApplication::exec()
         currentTime = std::chrono::steady_clock::now();
 
 
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - previousTime);
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime
+                                                                             - previousTime);
 
         previousTime = currentTime;
         float deltaTime = (float) elapsed.count() / 1000.0f;
@@ -461,7 +465,8 @@ void DemoApplication::exec()
 
         glm::vec3 cameraTarget = camera.position + cameraFront;
         glm::mat4 view = glm::lookAt(camera.position, cameraTarget, cameraUp);
-        glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float) m_window->getWidth() / (float) m_window->getHeight(), 0.3f, 700.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float) m_window->getWidth()
+                                                / (float) m_window->getHeight(), 0.3f, 700.0f);
 
 
         auto compileShader = [&] {
@@ -472,10 +477,10 @@ void DemoApplication::exec()
             m_modelEntity.model = nullptr;
             if (useModel)
             {
-                m_modelEntity.model = std::move(loadModel(path));
+                m_modelEntity.model = std::move(m_modelCache->loadModel(path));
             } else
             {
-                m_modelEntity.model = std::move(m_basicShapes->getShape(BasicShapes::SPHERE));
+                m_modelEntity.model = std::move(m_modelCache->getModelShape(ModelShape::Sphere));
             }
         };
 
@@ -515,7 +520,7 @@ void DemoApplication::generateIBLEnvironment(std::string& texturePath)
 {
     ChronoStopWatch sw("DemoApplication::generateIBLEnvironment");
 
-    auto quad = m_basicShapes->getShape(BasicShapes::QUAD);
+    auto quad = m_modelCache->getModelShape(ModelShape::Quad);
     IBLTexture = loadIBLTexture(texturePath);
 
     unsigned int captureFBO, captureRBO;
@@ -548,8 +553,8 @@ void DemoApplication::generateIBLEnvironment(std::string& texturePath)
 
     glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     glm::mat4 captureViews[] = {
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f),glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f),glm::vec3(0.0f, -1.0f,  0.0f)),
         glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
         glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
         glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
@@ -568,7 +573,8 @@ void DemoApplication::generateIBLEnvironment(std::string& texturePath)
     for (unsigned int i = 0; i < 6; ++i)
     {
         m_convertToCubeMap->setUniformMat4("view", captureViews[i]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //renderCube();

@@ -2,7 +2,6 @@
 
 #include SharedPBR.glsl
 
-
 struct Light
 {
     float intensity;

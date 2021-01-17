@@ -13,10 +13,9 @@
 
 class Window;
 class Buffer;
-class BasicShapes;
 class DebugUI;
-struct Geometry;
 class Shader;
+class ModelCache;
 
 struct Marker
 {
@@ -27,7 +26,8 @@ class DebugDraw
 {
 public:
     DebugDraw();
-    void renderMarkers(std::vector<Marker> const &markers, glm::mat4 const &view, glm::mat4 const &projection);
+    void renderMarkers(std::vector<Marker> const &markers, glm::mat4 const &view,
+                       glm::mat4 const &projection);
 private:
     std::shared_ptr<Buffer> m_vertexBuffer { nullptr };
     std::shared_ptr<Shader> m_debugPipeline { nullptr };
@@ -46,7 +46,7 @@ private:
     Entity m_modelEntity;
     Skybox m_skybox;
 
-    std::shared_ptr<BasicShapes> m_basicShapes;
+    std::shared_ptr<ModelCache> m_modelCache;
     std::shared_ptr<DebugUI> m_debugUI;
     std::vector<Light> m_lights;
     std::shared_ptr<Shader> m_pipeline { nullptr };

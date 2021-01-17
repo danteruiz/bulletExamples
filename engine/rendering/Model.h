@@ -2,6 +2,7 @@
 #include "Buffer.h"
 
 #include <vector>
+#include <array>
 #include <string>
 #include <memory>
 #include <unordered_map>
@@ -59,7 +60,28 @@ struct Model
     Buffer::Pointer vertexBuffer;
     Buffer::Pointer indexBuffer;
     bool hasIndexBuffer { false };
-    std::unordered_map<uint32_t, std::tuple<std::shared_ptr<Material>, std::shared_ptr<Shader>>> materials;
+    std::unordered_map<uint32_t, std::tuple<std::shared_ptr<Material>,
+                                            std::shared_ptr<Shader>>> materials;
 };
 
+
+enum ModelShape : uint8_t
+{
+    Cube = 0,
+    Sphere,
+    Quad,
+    NUM_SHAPES
+};
+
+class ModelCache
+{
+public:
+    ModelCache();
+    Model::Pointer loadModel(std::string const &file);
+    Model::Pointer getModelShape(int modelShape);
+
+private:
+    std::array<Model::Pointer, ModelShape::NUM_SHAPES> m_modelShapes;
+    std::unordered_map<std::string, Model::Pointer> m_models;
+};
 Model::Pointer loadModel(std::string const &file);
