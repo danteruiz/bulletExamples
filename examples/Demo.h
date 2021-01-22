@@ -42,6 +42,7 @@ public:
 private:
 
     void generateIBLEnvironment(std::string& texturePath);
+    unsigned int generateEnviromentMap();
     Light m_light;
     Entity m_modelEntity;
     Skybox m_skybox;

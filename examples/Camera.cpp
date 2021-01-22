@@ -1,16 +1,21 @@
 #include "Camera.h"
 
-#include <Input.h>
+//#include <Input.h>
 
+ICamera::ICamera() {}
 
-Camera::Camera(Input* input) : m_input(input) {}
-
-glm::mat4 Camera::getViewMatrix() const
+glm::mat4 ICamera::getViewMatrix() const
 {
     return glm::mat4();
 }
 
-glm::mat4 Camera::getViewPosition() const
+glm::vec3 ICamera::getViewPosition() const
 {
     return glm::vec3();
+}
+
+
+void ICamera::update(float deltaTime)
+{
+
 }

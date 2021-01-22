@@ -8,6 +8,10 @@
 #include "external/stb_image_write.h"
 #include <gl/glew.h>
 
+#include "spdlog/spdlog.h"
+
+#include <Logger.h>
+
 std::shared_ptr<Texture> loadTexture(std::string path)
 {
     //path = "C:/Users/dante/code/hifi-content/avatars/GrayFoxWithEyes/GrayFoxWithEyeys/" + path;
@@ -85,7 +89,8 @@ std::shared_ptr<Texture> loadCubeMap(std::array<std::string, 6> imagePaths)
 
         if (data)
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB,
+                         GL_UNSIGNED_BYTE, data);
             stbi_image_free(data);
         } else
         {
@@ -111,8 +116,11 @@ std::shared_ptr<Texture> loadIBLTexture(std::string path)
     int width, height, nrComponents;
     float *data = stbi_loadf(path.c_str(), &width, &height, &nrComponents, 0);
 
+    spdlog::debug("width: {0} height: {1} components: {2}", width, height, nrComponents);
     std::cout << "loading: " << path << std::endl;
     std::shared_ptr<Texture> IBLTexture= std::make_shared<Texture>();
+    IBLTexture->width = width;
+    IBLTexture->height = height;
     if (data)
     {
         glGenTextures(1, &IBLTexture->id);

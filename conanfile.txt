@@ -8,6 +8,9 @@ imgui/1.69@bincrafters/stable
 fmt/6.0.0@bincrafters/stable
 spdlog/1.4.2@bincrafters/stable
 
+[generators]
+cmake_paths
+
 
 [imports]
 ./misc/bindings, imgui_impl_glfw.cpp -> ../engine/ui/imgui/bindings

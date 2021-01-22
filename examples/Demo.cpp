@@ -516,6 +516,77 @@ void DemoApplication::exec()
     }
 }
 
+unsigned int DemoApplication::generateEnviromentMap()
+{
+    unsigned int textureId;
+
+    unsigned int frameBuffer;
+    unsigned int renderBuffer;
+    glGenFramebuffers(1, &frameBuffer);
+    //glGenRenderbuffers(1, &renderBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+    //glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+    //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1080, 1080);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
+
+
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB,
+                     1080, 1080, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    glm::mat4 captureViews[] = {
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f),  glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+    };
+
+    m_convertToCubeMap->bind();
+    m_convertToCubeMap->setUniformMat4("projection", captureProjection);
+    m_convertToCubeMap->setUniform1i("hdrTexture", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, IBLTexture->id);
+
+    glViewport(0, 0, 1080, 1080);
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        m_convertToCubeMap->setUniformMat4("view", captureViews[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, textureId, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        //renderCube();
+        auto& model = m_skybox.model;
+        auto& mesh = model->meshes[0];
+        auto& primitive = mesh.primitives[0];
+        auto vertexBuffer = model->vertexBuffer;
+        vertexBuffer->bind();
+        vertexBuffer->getLayout()->enableAttributes();
+
+        model->indexBuffer->bind();
+        glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT,
+                       (void*) (primitive.indexStart * sizeof(GLuint)));
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //glDeleteFramebuffers(1, &frameBuffer);
+
+    return textureId;
+}
+
 void DemoApplication::generateIBLEnvironment(std::string& texturePath)
 {
     ChronoStopWatch sw("DemoApplication::generateIBLEnvironment");
@@ -528,69 +599,21 @@ void DemoApplication::generateIBLEnvironment(std::string& texturePath)
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-    glGenFramebuffers(1, &captureFBO);
+
+
+    envCubemap = generateEnviromentMap();
     glGenRenderbuffers(1, &captureRBO);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
-
-    glGenTextures(1, &envCubemap);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
-                     512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
+    glGenFramebuffers(1, &captureFBO);
 
     glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     glm::mat4 captureViews[] = {
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f),glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f),glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f),  glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
     };
-
-
-    m_convertToCubeMap->bind();
-    m_convertToCubeMap->setUniformMat4("projection", captureProjection);
-    m_convertToCubeMap->setUniform1i("hdrTexture", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, IBLTexture->id);
-
-    glViewport(0, 0, 512, 512);
-    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-    for (unsigned int i = 0; i < 6; ++i)
-    {
-        m_convertToCubeMap->setUniformMat4("view", captureViews[i]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        //renderCube();
-
-        auto& model = m_skybox.model;
-        auto& mesh = model->meshes[0];
-        auto& primitive = mesh.primitives[0];
-        auto vertexBuffer = model->vertexBuffer;
-        vertexBuffer->bind();
-        vertexBuffer->getLayout()->enableAttributes();
-
-        model->indexBuffer->bind();
-        glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
@@ -623,7 +646,8 @@ void DemoApplication::generateIBLEnvironment(std::string& texturePath)
     for (unsigned int i = 0; i < 6; ++i)
     {
         m_irradiance->setUniformMat4("view", captureViews[i]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         auto& model = m_skybox.model;
@@ -634,7 +658,8 @@ void DemoApplication::generateIBLEnvironment(std::string& texturePath)
         vertexBuffer->getLayout()->enableAttributes();
 
         model->indexBuffer->bind();
-        glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
+        glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT,
+                       (void*) (primitive.indexStart * sizeof(GLuint)));
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -643,7 +668,8 @@ void DemoApplication::generateIBLEnvironment(std::string& texturePath)
 
     for (unsigned int i = 0; i < 6; ++i)
     {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0,
+                     GL_RGB, GL_FLOAT, nullptr);
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -689,7 +715,8 @@ void DemoApplication::generateIBLEnvironment(std::string& texturePath)
             vertexBuffer->getLayout()->enableAttributes();
 
             model->indexBuffer->bind();
-            glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
+            glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT,
+                           (void*) (primitive.indexStart * sizeof(GLuint)));
         }
     }
 
@@ -721,7 +748,8 @@ void DemoApplication::generateIBLEnvironment(std::string& texturePath)
     vertexBuffer->getLayout()->enableAttributes();
 
     quad->indexBuffer->bind();
-    glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT, (void*) (primitive.indexStart * sizeof(GLuint)));
+    glDrawElements(GL_TRIANGLES, (GLsizei) primitive.indexCount, GL_UNSIGNED_INT,
+                   (void*) (primitive.indexStart * sizeof(GLuint)));
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

@@ -1,8 +1,6 @@
 project(rendering-examples)
 cmake_minimum_required(VERSION 3.11)
 
-
-
 set(GLTF_MODEL_PATH "${CMAKE_SOURCE_DIR}/resources/glTF-models/")
 set(IBL_PATH "${CMAKE_SOURCE_DIR}/resources/images/IBL/")
 
@@ -11,10 +9,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/macros/LinkPersonalLibraries.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/macros/GenerateModelPaths.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/macros/GenerateIBLPaths.cmake)
-conan_add_remote(NAME bincrafters INDEX 1
-  URL https://api.bintray.com/conan/bincrafters/public-conan)
-conan_cmake_run(CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS
-  BUILD missing)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED_ON)
