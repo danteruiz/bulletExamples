@@ -1,6 +1,8 @@
 project(rendering-examples)
 cmake_minimum_required(VERSION 3.11)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS)
 set(GLTF_MODEL_PATH "${CMAKE_SOURCE_DIR}/resources/glTF-models/")
 set(IBL_PATH "${CMAKE_SOURCE_DIR}/resources/images/IBL/")
 
