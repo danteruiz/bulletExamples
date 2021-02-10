@@ -9,7 +9,7 @@ find_package(OPENGL REQUIRED)
 
 target_link_libraries(render
   PUBLIC CONAN_PKG::glm OpenGL::GL CONAN_PKG::glew
-  PRIVATE CONAN_PKG::Assimp CONAN_PKG::spdlog)
+  PRIVATE CONAN_PKG::spdlog)
 
 link_personal_libraries(core)
 target_include_directories(render

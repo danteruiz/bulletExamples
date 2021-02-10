@@ -13,7 +13,7 @@ void Buffer::bind() const
 {
     glBindBuffer(m_type, m_id);
 }
-n
+
 void Buffer::unbind() const
 {
     glBindBuffer(m_type, 0);

@@ -1,6 +1,10 @@
 #pragma once
 
+#if OS_LINUX
+#include <GL/glew.h>
+#else
 #include <gl/glew.h>
+#endif
 #include <memory>
 
 class Layout;
