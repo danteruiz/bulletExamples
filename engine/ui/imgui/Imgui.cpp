@@ -53,7 +53,7 @@ namespace imgui
 
     bool InputText(std::string label, std::string& buffer)
     {
-        char* buf = buffer.data();
-        return ImGui::InputText(label.c_str(), buf, buffer.size());
+        const char* buf = buffer.data();
+        return ImGui::InputText(label.c_str(), const_cast<char*>(buf), buffer.size());
     }
 }

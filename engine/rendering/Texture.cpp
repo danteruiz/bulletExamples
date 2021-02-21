@@ -6,7 +6,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
-#include <gl/glew.h>
+#include "GL.h"
 
 #include "spdlog/spdlog.h"
 
@@ -116,7 +116,7 @@ std::shared_ptr<Texture> loadIBLTexture(std::string path)
     int width, height, nrComponents;
     float *data = stbi_loadf(path.c_str(), &width, &height, &nrComponents, 0);
 
-    spdlog::debug("width: {0} height: {1} components: {2}", width, height, nrComponents);
+    //spdlog::debug("width: {0} height: {1} components: {2}", width, height, nrComponents);
     std::cout << "loading: " << path << std::endl;
     std::shared_ptr<Texture> IBLTexture= std::make_shared<Texture>();
     IBLTexture->width = width;

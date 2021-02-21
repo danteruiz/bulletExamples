@@ -34,7 +34,7 @@
 
 #include "DebugUI.h"
 #include "Helper.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+//#include "spdlog/sinks/stdout_color_sinks.h"
 
 
 
@@ -263,7 +263,8 @@ DemoApplication::DemoApplication()
     m_filterMap = std::make_shared<Shader>(FILTER_MAP, SKYBOX_VERT);
     m_brdfLut = std::make_shared<Shader>(BRDF_FRAG, BRDF_VERT);
 
-    generateIBLEnvironment(m_debugUI->getEnvironmentMapPath());
+    std::string envMapPath = m_debugUI->getEnvironmentMapPath();
+    generateIBLEnvironment(envMapPath);
 
     m_window->setWidthAndHeight(1800, 1200);
 }
@@ -425,7 +426,7 @@ void drawSkybox(const Skybox& skybox, const RenderArgs& renderArgs)
 
 void DemoApplication::exec()
 {
-    spdlog::debug("DemoApplication::exec");
+    //    spdlog::debug("DemoApplication::exec");
     glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);

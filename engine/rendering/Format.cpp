@@ -1,8 +1,9 @@
 #include "Format.h"
 
+#include "GL.h"
+
 #include <assert.h>
 
-#include <gl/glew.h>
 void Layout::setAttribute(unsigned int slot, unsigned int count, unsigned int stride, unsigned int offset)
 {
     m_attributes.push_back(Attribute(slot, count, stride, offset));

@@ -1,6 +1,6 @@
 #include "GLObject.h"
 
-GLObect::GLObeject(Type type) : m_type(type)
+GLObject::GLObject(Type type) : m_type(type)
 {
     switch (type) {
         case Type::Buffer:
@@ -20,7 +20,7 @@ GLObect::GLObeject(Type type) : m_type(type)
 
 GLObject::~GLObject()
 {
-     switch (type) {
+     switch (m_type) {
         case Type::Buffer:
             glDeleteBuffers(1, &m_id);
             break;

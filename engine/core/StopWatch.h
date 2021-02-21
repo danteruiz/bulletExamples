@@ -6,16 +6,15 @@
 
 template <typename T> class StopWatch : T
 {
-    typedef typename T BaseTimer;
 public:
     explicit StopWatch(std::string const &category) : m_category(category)
     {
-        start();
+        T::start();
     }
 
     ~StopWatch()
     {
-        int64_t duration = getMs();
+        int64_t duration = T::getMs();
         std::cout << m_category << " : " << duration << std::endl;
     }
 

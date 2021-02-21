@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gl/glew.h>
+#include "GL.h"
 class GLObject {
 public:
     enum class Type : uint8_t
@@ -19,4 +19,4 @@ public:
 protected:
     Type m_type;
     GLuint m_id;
-}
+};

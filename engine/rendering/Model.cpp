@@ -9,10 +9,6 @@
 #define TINYGLTF_IMPLEMENTATION
 #include "external/tiny_gltf.h"
 
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <spdlog/spdlog.h>
 #include <StopWatch.h>
 
@@ -62,7 +58,7 @@ void processIndexData(T const *gltfIndices, std::vector<uint32_t>& indices,
 Mesh processMesh(std::vector<Vertex> &vertices, std::vector<uint32_t> &indices,
                  tinygltf::Model &model, tinygltf::Mesh& gltfMesh)
 {
-    spdlog::debug("Model::processMesh");
+    //    spdlog::debug("Model::processMesh");
     Mesh mesh;
     for (size_t i = 0; i < gltfMesh.primitives.size(); ++i)
     {
@@ -252,10 +248,10 @@ void getShadersAndMaterials(std::shared_ptr<Model>& model, tinygltf::Model gltfM
         const auto& gltfMaterial = gltfModel.materials[index];
         for (auto ext: gltfMaterial.extensions) {
             std::cout << "externals" << ext.first << std::endl;
-            spdlog::debug("model: externals {}", ext.first);
+            //  spdlog::debug("model: externals {}", ext.first);
         }
 
-        spdlog::debug("material name: {}", gltfMaterial.name);
+        //        spdlog::debug("material name: {}", gltfMaterial.name);
         std::string defines;
         std::shared_ptr<Material> material = std::make_shared<Material>();
         auto pbrMaterial = gltfMaterial.pbrMetallicRoughness;

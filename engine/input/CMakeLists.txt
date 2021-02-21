@@ -1,12 +1,13 @@
 set(TARGET_NAME input)
-project(input)
 
 file(GLOB input_sources "*.h" "*.cpp")
-add_library(${PROJECT_NAME} STATIC ${input_sources})
+
+find_package(glfw REQUIRED)
+add_library(${TARGET_NAME} STATIC ${input_sources})
 
 link_personal_libraries(core)
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE CONAN_PKG::glfw)
+target_link_libraries(${TARGET_NAME}
+  PRIVATE glfw::glfw)
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(${TARGET_NAME}
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

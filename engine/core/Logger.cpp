@@ -1,12 +1,12 @@
 #include "Logger.h"
 
 #include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 //#include "spdlog/sinks/msvc_sink.h"
 //#include "spdlog/sinks/wincolor_sink.h"
 //#include "spdlog/sinks/msvc_sink.h"
 //#include "spdlog/sinks/wincolor_sink.h"
-#include "spdlog/sinks/basic_file_sink.h"
 
 #include <memory>
 namespace logger
@@ -14,10 +14,10 @@ namespace logger
     void initializeSpdLog()
     {
 
-#ifdef _WIN32
-        auto consoleSink = std::make_shared<spdlog::sinks::windebug_sink_mt>();
-#else
+#ifdef OS_LINUX
         auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+#else
+        auto consoleSink = std::make_shared<spdlog::sinks::windebug_sink_mt>();
 #endif
 
         auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("general.txt", true);
