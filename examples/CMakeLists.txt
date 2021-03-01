@@ -17,8 +17,6 @@ else()
   add_executable(${PROJECT_NAME} ${source_files})
 endif()
 
-find_package(fmt REQUIRED)
-find_package(spdlog REQUIRED)
 target_compile_definitions(${PROJECT_NAME} PUBLIC RESOURCE_PATH="${CMAKE_SOURCE_DIR}/resources/")
 link_personal_libraries(render input core ui)
 target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt spdlog::spdlog)

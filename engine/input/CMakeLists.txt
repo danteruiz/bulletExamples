@@ -2,7 +2,6 @@ set(TARGET_NAME input)
 
 file(GLOB input_sources "*.h" "*.cpp")
 
-find_package(glfw REQUIRED)
 add_library(${TARGET_NAME} STATIC ${input_sources})
 
 link_personal_libraries(core)

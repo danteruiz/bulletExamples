@@ -5,12 +5,6 @@ file(GLOB graphics_source "*.cpp")
 
 add_library(render STATIC ${graphics_source} ${graphics_headers})
 
-find_package(OPENGL REQUIRED)
-find_package(glew REQUIRED)
-find_package(glm REQUIRED)
-find_package(spdlog REQUIRED)
-find_package(fmt REQUIRED)
-
 target_link_libraries(render
   PUBLIC glm::glm OpenGL::GL glew::glew spdlog::spdlog fmt::fmt)
 

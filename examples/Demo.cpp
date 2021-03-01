@@ -30,11 +30,8 @@
 #include <imgui/Imgui.h>
 #include <StopWatch.h>
 
-#include <Logger.h>
-
 #include "DebugUI.h"
 #include "Helper.h"
-//#include "spdlog/sinks/stdout_color_sinks.h"
 
 
 
@@ -216,10 +213,6 @@ void DebugDraw::renderMarkers(std::vector<Marker> const  &markers, glm::mat4 con
 
 DemoApplication::DemoApplication()
 {
-    logger::initializeSpdLog();
-    //auto console = spdlog::stdout_color_mt("console");
-    //spdlog::get("console")->info("loggers can be retrieved from a global
-    //registry using the spdlog::get(logger_name)");
     glewExperimental = true;
     if (glewInit() != GLEW_OK)
     {

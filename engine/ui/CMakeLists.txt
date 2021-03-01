@@ -6,9 +6,6 @@ file(GLOB ui_source "*.cpp" "imgui/*.cpp" "imgui/bindings/*.cpp")
 
 add_library(${TARGET_NAME} STATIC ${ui_headers} ${ui_source})
 
-
-find_package(glfw REQUIRED)
-find_package(imgui REQUIRED)
 link_personal_libraries(core render)
 
 target_link_libraries(${TARGET_NAME} PRIVATE glfw::glfw)

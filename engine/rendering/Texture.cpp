@@ -10,8 +10,6 @@
 
 #include "spdlog/spdlog.h"
 
-#include <Logger.h>
-
 std::shared_ptr<Texture> loadTexture(std::string path)
 {
     //path = "C:/Users/dante/code/hifi-content/avatars/GrayFoxWithEyes/GrayFoxWithEyeys/" + path;
