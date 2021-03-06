@@ -47,6 +47,8 @@ private:
     Entity m_modelEntity;
     Skybox m_skybox;
 
+
+    // std::shared_ptr<shader::Pipeline> m_pbr 
     std::shared_ptr<ModelCache> m_modelCache;
     std::shared_ptr<DebugUI> m_debugUI;
     std::vector<Light> m_lights;

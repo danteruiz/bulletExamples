@@ -4,6 +4,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "spdlog/spdlog.h"
+
 template <typename T> class StopWatch : T
 {
 public:
@@ -15,7 +17,7 @@ public:
     ~StopWatch()
     {
         int64_t duration = T::getMs();
-        std::cout << m_category << " : " << duration << std::endl;
+        spdlog::info("duration: {}", duration);
     }
 
 private:

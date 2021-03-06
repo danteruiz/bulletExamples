@@ -18,6 +18,4 @@ public:
     static GlfwApplication* instance();
 protected:
     std::shared_ptr<Window> m_window { nullptr };
-
-    std::string m_string { "Hello" };
 };
