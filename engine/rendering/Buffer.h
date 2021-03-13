@@ -1,30 +1,18 @@
 #pragma once
 
-#include "GL.h"
 #include <memory>
 
-class Layout;
+#inclue "Format.h"
+
 class Buffer
 {
 public:
     using Pointer = std::shared_ptr<Buffer>;
-    enum Type
-    {
-        ARRAY = GL_ARRAY_BUFFER,
-        ELEMENT = GL_ELEMENT_ARRAY_BUFFER
-    };
-
-    Buffer(Buffer::Type type, size_t size, size_t count, void *data);
-
-    void bind() const;
-    void unbind() const;
-    void setLayout(std::shared_ptr<Layout> layout);
-    std::shared_ptr<Layout>  getLayout() const;
-    unsigned int getID() { return m_id; }
+    Buffer();
+    size_t getNumElements() const { return m_numElements; }
+    void* data() const { return m_data; }
+    bool setData(void const *data
 private:
-    unsigned int m_id { 0 };
-    size_t m_size { 0 };
-    size_t m_count { 0 };
-    Buffer::Type m_type;
-    std::shared_ptr<Layout> m_layout;
+    size_t m_size;
+    void* m_data { nullptr };
 };

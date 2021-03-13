@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Material.h"
 #include "Format.h"
+#include "Layout.h"
 #include "Texture.h"
 
 #define TINYGLTF_IMPLEMENTATION
@@ -326,10 +327,11 @@ Model::Pointer loadGLTFModel(std::string const &file)
     getShadersAndMaterials(geometry, model);
 
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
-    layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
-    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
-    layout->setAttribute(Slots::TEXCOORD, 2, sizeof(Vertex),
-                         (unsigned int) offsetof(Vertex, texCoord));
+    layout->addAttribute(Slot::POSITION, Format(Type::Float, Dimension::Vec3), 0);
+    layout->addAttribute(Slot::NORMAL, Format(Type::Float, Dimension::Vec3),
+                         offsetof(Vertex, normal));
+    layout->addAttribute(Slot::TEXCOORD, Format(Type::Float, Dimension::Vec2),
+                         offsetof(Vertex, texCoord));
     auto& vertices = geometry->vertices;
     auto& indices = geometry->indices;
 
@@ -409,8 +411,8 @@ Model::Pointer buildSphere()
     mesh.primitives.push_back(primitive);
 
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
-    layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
-    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
+    layout->addAttribute(Slot::POSITION, 3, sizeof(Vertex), 0);
+    layout->addAttribute(Slot::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
 
     geometry->vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, geometry->vertices.size()
                                                       * sizeof(Vertex), geometry->vertices.size(),
@@ -419,9 +421,6 @@ Model::Pointer buildSphere()
     geometry->indexBuffer = std::make_shared<Buffer>(Buffer::ELEMENT, geometry->indices.size()
                                                      * sizeof(int), geometry->indices.size(),
                                                      geometry->indices.data());
-
-    //geometry->materials["default"] = std::make_shared<Material>();
-
     geometry->meshes.push_back(mesh);
     geometry->hasIndexBuffer = true;
     return geometry;
@@ -503,9 +502,9 @@ Model::Pointer buildCube()
     mesh.primitives.push_back(primitive);
 
     std::shared_ptr<Layout> layout = std::make_shared<Layout>();
-    layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
-    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
-    layout->setAttribute(Slots::TEXCOORD, 2, sizeof(Vertex),
+    layout->addAttribute(Slot::POSITION, 3, sizeof(Vertex), 0);
+    layout->addAttribute(Slot::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
+    layout->addAttribute(Slot::TEXCOORD, 2, sizeof(Vertex),
                          (unsigned int) offsetof(Vertex,texCoord));
 
     geometry->vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, geometry->vertices.size()
@@ -551,9 +550,9 @@ Model::Pointer buildQuad()
     mesh.primitives.push_back(primitive);
 
      std::shared_ptr<Layout> layout = std::make_shared<Layout>();
-    layout->setAttribute(Slots::POSITION, 3, sizeof(Vertex), 0);
-    layout->setAttribute(Slots::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
-    layout->setAttribute(Slots::TEXCOORD, 2, sizeof(Vertex),
+    layout->setAttribute(Slot::POSITION, 3, sizeof(Vertex), 0);
+    layout->setAttribute(Slot::NORMAL, 3, sizeof(Vertex), (unsigned int) offsetof(Vertex, normal));
+    layout->setAttribute(Slot::TEXCOORD, 2, sizeof(Vertex),
                          (unsigned int) offsetof(Vertex,texCoord));
 
     model->vertexBuffer = std::make_shared<Buffer>(Buffer::ARRAY, model->vertices.size() *

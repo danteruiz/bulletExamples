@@ -26,6 +26,7 @@ class DebugDraw
 {
 public:
     DebugDraw();
+    
     void renderMarkers(std::vector<Marker> const &markers, glm::mat4 const &view,
                        glm::mat4 const &projection);
 private:
